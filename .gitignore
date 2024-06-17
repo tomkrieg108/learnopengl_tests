@@ -1,0 +1,21 @@
+# Binaries
+**/bin/
+**/bin-obj/
+**/bin-int/
+**/x64/
+
+#Assets folder - maybe include shaders later
+**/assets/
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.csproj
+
+# vendor files & folders
+**/vendor
+
+**/exclude
