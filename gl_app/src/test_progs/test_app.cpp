@@ -51,13 +51,17 @@
 #include "5.advanced_lighting/3.2.2.point_shadows_soft/point_shadows_soft.h"
 #include "5.advanced_lighting/4.normal_mapping/normal_map.h"
 #include "5.advanced_lighting/5.1.parallax_mapping/parallax_mapping.h"
+#include "5.advanced_lighting/5.2.parallax_mapping/parallax_mapping_multi_sample.h"
+#include "5.advanced_lighting/5.3.parallax_mapping/parallax_occlusion_mapping.h"
 #include "5.advanced_lighting/6.hdr/hdr.h"
 #include "5.advanced_lighting/7.bloom/bloom.h"
 #include "5.advanced_lighting/8.1.deferred_shading/deferred_shading.h"
+#include "5.advanced_lighting/9.1.ssao/ssao.h"
 
 #include "7.in_practice/2.text_rendering/text_rendering.h"
 
-#include "height_maps/height_map_cpu.h"
+#include "8.guest/2020/skeletal_animation/skeletal_animation.h"
+#include "8.guest/2021/tesselation/height_maps/height_map_cpu.h"
 
 #include "opengl_bible/sec2.h"
 
@@ -118,12 +122,16 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case LGL_POINT_SHADOW_SOFT: return new PointShadowsSoft(m_window, m_camera); break;
 		case LGL_NORMAL_MAPPING: return new NormalMap(m_window, m_camera); break;
 		case LGL_PARALLAX_MAPPING: return new ParallaxMapping(m_window, m_camera); break;
+		case LGL_PARALLAX_MAPPING_MULTI_SAMPLE: return new ParallaxMappingMultiSample(m_window, m_camera); break;
+		case LGL_PARALLAX_OCCLUSION_MAPPING: return new ParallaxOcclusionMapping(m_window, m_camera); break;
 		case LGL_HDR: return new HDR(m_window, m_camera); break;
 		case LGL_BLOOM: return new Bloom(m_window, m_camera); break;
 		case LGL_DEFERRED_SHADING: return new DeferredShading(m_window, m_camera); break;
+		case LGL_SCREEN_SPACE_AMBIENT_OCCLUSION: return new SSAO(m_window, m_camera); break;
 
 		case LGL_TEXT_RENDERING: return new TextRendering(m_window, m_camera); break;
 
+		case LGL_SKELETAL_ANIMATION: return new SkeletalAnimation(m_window, m_camera); break;
 		case LGL_HEIGHT_MAP_CPU: return new LayerHeightMapCPU(m_camera); break;
 
 		case BIB_2: return new LayerSec2(); break;

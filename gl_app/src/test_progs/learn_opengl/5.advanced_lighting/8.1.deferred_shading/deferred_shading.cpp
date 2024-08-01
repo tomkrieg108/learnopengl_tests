@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <GL\glew.h>
+#include <GL/glew.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,8 +24,13 @@ DeferredShading::DeferredShading(Window& window, Camera& camera) :
 void DeferredShading::Startup()
 {
 
-    // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-    stbi_set_flip_vertically_on_load(true);
+    //Note that the grid and coords will not get displayed
+    //They are overwritten by the quad containing the scene.
+    //need to mouse down to see the scene.
+
+    //According to learnopengl.com need to flip texture - but actually this messes it up, so commented out
+    //tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
+    //stbi_set_flip_vertically_on_load(true);
 
     // configure global opengl state
     // -----------------------------
@@ -38,11 +43,13 @@ void DeferredShading::Startup()
     shaderGeometryPass = shader_builder.Vert("8.1.g_buffer.vs").Frag("8.1.g_buffer.fs").Build("shaderGeometryPass shader");
     shaderLightingPass = shader_builder.Vert("8.1.deferred_shading.vs").Frag("8.1.deferred_shading.fs").Build("shaderLightingPass shader");
     shaderLightBox = shader_builder.Vert("8.1.deferred_light_box.vs").Frag("8.1.deferred_light_box.fs").Build("shaderLightBox shader");
+    shaderDebug = shader_builder.Vert("8.1.fbo_debug.vs").Frag("8.1.fbo_debug.fs").Build("shaderDebug");
 
 
     // load models
     // -----------
     ourModel = new lgl::Model{ "assets/models/backpack/backpack.obj" };
+    
     
     objectPositions.push_back(glm::vec3(-3.0, -0.5, -3.0));
     objectPositions.push_back(glm::vec3(0.0, -0.5, -3.0));
@@ -147,6 +154,17 @@ void DeferredShading::OnUpdate(double now, double time_step)
         ourModel->Draw(*shaderGeometryPass);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Debug gBuffer
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //shaderDebug->Bind();
+    //shaderDebug->SetUniform1i("fboAttachment", 0);
+    //glActiveTexture(GL_TEXTURE0);
+    ////glBindTexture(GL_TEXTURE_2D, gPosition);
+    //glBindTexture(GL_TEXTURE_2D, gNormal);
+    ////glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+    //renderQuad();
+    //return;
 
     // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
        // -----------------------------------------------------------------------------------------------------------------------

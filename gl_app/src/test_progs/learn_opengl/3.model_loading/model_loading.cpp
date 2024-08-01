@@ -34,8 +34,12 @@ void ModelLoadingTest::Startup()
     ShaderBuilder shader_builder("src/test_progs/learn_opengl/3.model_loading/");
     m_shader = shader_builder.Vert("1.model_loading.vs").Frag("1.model_loading.fs").Build("Model loading Test");
 
-   // ourModel = new lgl::Model{ "assets/models/backpack/backpack.obj" };
-    ourModel = new lgl::Model{ "assets/models/nanosuit/nanosuit.obj" };
+    // According to learnopengl.com need to flip texture - but actually this messes it up.
+    // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
+    //stbi_set_flip_vertically_on_load(true);
+
+    ourModel = new lgl::Model{ "assets/models/backpack/backpack.obj" };
+    //ourModel = new lgl::Model{ "assets/models/nanosuit/nanosuit.obj" };
     //ourModel = new lgl::Model{ "assets/models/rock/rock.obj" };
     //ourModel = new lgl::Model{ "assets/models/tropical_shrubs/01/trop_shrub_01.obj" };
     //ourModel = new lgl::Model{ "assets/models/Tree1TS/Tree1/Tree1.blend" };

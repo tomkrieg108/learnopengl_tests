@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
-#include <stb_image\stb_image.h>
+#include <stb_image/stb_image.h>
 
 #include "lgl_model.h"
 
@@ -79,6 +79,7 @@ namespace lgl
             vector.z = mesh->mVertices[i].z;
             vertex.Position = vector;
             // normals
+           
             if (mesh->HasNormals())
             {
                 vector.x = mesh->mNormals[i].x;

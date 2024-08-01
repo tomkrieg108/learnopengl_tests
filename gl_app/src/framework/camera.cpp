@@ -36,7 +36,7 @@ void Camera::Turn(float amount_x, float amount_y)
 	m_yaw += amount_x;
 	m_pitch += amount_y;
 
-	std::cout << "Mouse move yaw pitch:" << amount_x/0.1f << "," << amount_y/0.1f << "\n";
+	//std::cout << "Mouse move yaw pitch:" << amount_x/0.1f << "," << amount_y/0.1f << "\n";
 
 	if (m_pitch > 89.0f)
 	{

@@ -18,7 +18,7 @@ void LayerHeightMapCPU::Startup()
 	glEnable(GL_DEPTH_TEST);
 
 	//shader dir doesn't get assigned until after the constructor of LayerHeightMapCPU
-	ShaderBuilder shader_builder("src/test_progs/learn_opengl/height_maps/");
+	ShaderBuilder shader_builder("src/test_progs/learn_opengl/8.guest/2021/tesselation/height_maps/");
 	m_shader = shader_builder.Vert("height_cpu.vs").Frag("height_cpu.fs").Build("height_cpu_shader");
 
 	m_camera.SetPosition(glm::vec3(0.0f, 50.0f, 0.0f));

@@ -20,6 +20,7 @@ private:
 	std::unique_ptr<Shader> shaderGeometryPass = nullptr;
 	std::unique_ptr<Shader> shaderLightingPass = nullptr;
 	std::unique_ptr<Shader> shaderLightBox = nullptr;
+	std::unique_ptr<Shader> shaderDebug = nullptr;
 
 	lgl::Model* ourModel = nullptr;
 	unsigned int gBuffer = 0;

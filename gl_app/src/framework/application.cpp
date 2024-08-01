@@ -31,7 +31,7 @@ App::App()
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_BASIC_LIGHTING_COLOURS);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_BASIC_LIGHTING_DIFFUSE);
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_BASIC_LIGHTING_SPECULAR);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_BASIC_LIGHTING_SPECULAR);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_MATERIALS_TEST);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_LIGHT_MAP_DIFFUSE);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_LIGHT_MAP_SPECULAR);
@@ -73,13 +73,17 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_POINT_SHADOW_SOFT);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_NORMAL_MAPPING);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_PARALLAX_MAPPING);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_PARALLAX_MAPPING_MULTI_SAMPLE);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_PARALLAX_OCCLUSION_MAPPING);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HDR);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_BLOOM);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_DEFERRED_SHADING);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SCREEN_SPACE_AMBIENT_OCCLUSION);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_TEXT_RENDERING);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_CPU);
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKELETAL_ANIMATION);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::BIB_2);
 
@@ -126,13 +130,7 @@ void App::Shutdown()
 
 void App::Render(double now, double time_step)
 {
-	//const GLfloat clear_color[] = { glm::sin(now) * 0.5f + 0.5f, glm::cos(now) * 0.5f + 0.5f,
-	//						  0.0f, 1.0f };
-	//GLfloat clear_color[] = { 0.0f, 0.0f, 0.1f, 1.0f };
-	//glClearBufferfv(GL_COLOR, 0, clear_color);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // don't forget to clear the stencil buffer!
 	if (m_coords)
 		m_coords->OnUpdate(now, time_step);
@@ -271,7 +269,7 @@ void App::OnMouseMove(EventMouseMove& e)
 
 	const float sensitivity = 0.1f;
  	m_camera->Turn(e.delta_x * sensitivity, e.delta_y * sensitivity);
-	std::cout << "Mouse move x y:" << e.delta_x << "," << e.delta_y << "\n";
+	//std::cout << "Mouse move x y:" << e.delta_x << "," << e.delta_y << "\n";
 }
 
 void App::OnMouseLDown(EventMouseLDown& e)
@@ -302,7 +300,7 @@ void App::OnMouseMUp(EventMouseMUp& e)
 void App::OnMouseScroll(EventMouseScroll& e)
 {
 	m_camera->Zoom(e.y_offset);
-	std::cout << "Mouse scroll \n";
+	//std::cout << "Mouse scroll \n";
 }
 
 void App::OnKeyPressed(EventKeyPressed& e)
@@ -329,7 +327,7 @@ void App::OnKeyReleased(EventKeyReleased& e)
 void App::OnWinResize(EventWinResize& e)
 {
 	m_camera->SetAspectRatio((float)e.buffer_width, (float)e.buffer_height);
-	std::cout << "Win Resize\n";
+	//std::cout << "Win Resize\n";
 }
 
 void App::CheckKeys(double delta_time)
