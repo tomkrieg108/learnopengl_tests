@@ -44,7 +44,6 @@ App::App()
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_MODEL_LOADING_TEST);
 
-
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_DEPTH_TESTING);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_DEPTH_TESTING_VIEW);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_STENCIL_TESTING);
@@ -83,9 +82,12 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_TEXT_RENDERING);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_CPU);
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKELETAL_ANIMATION);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKELETAL_ANIMATION);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::BIB_2);
+
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_ANIMATED_MODEL_BASIC);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_COMP_GEOM);
 
 		
 	EventManager::SetCallback(this, &App::OnMouseMove);
@@ -142,7 +144,7 @@ void App::Run()
 	App::Startup();
 
 	auto delta_time = 0.0;
-	auto last_time = glfwGetTime();
+	auto last_time = glfwGetTime(); //seconds since GLFW was initialised
 	while (!m_window->ShouldClose())
 	{
 		auto now = glfwGetTime(); //in seconds

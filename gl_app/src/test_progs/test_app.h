@@ -73,8 +73,10 @@ public:
 		LGL_SKELETAL_ANIMATION,
 		LGL_HEIGHT_MAP_CPU,
 		
-
 		BIB_2,
+
+		MISC_ANIMATED_MODEL_BASIC,
+		MISC_COMP_GEOM,
 	};
 
 private:

@@ -21,7 +21,8 @@ namespace lgl
         // model data 
         std::vector<lgl::TextureStruct> m_textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
         std::vector<lgl::Mesh>    m_meshes;
-        std::string m_directory;
+        std::string m_directory{ "" };
+        
         bool m_gammaCorrection;
 
         // constructor, expects a filepath to a 3D model.

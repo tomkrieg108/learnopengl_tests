@@ -4,10 +4,11 @@
 #include "test_app.h"
 
 #include "misc/coords/coord_sys.h"
+#include "misc/anim_model/anim_model.h"
+#include "misc/comp_geom/comp_geom.h"
 
 #include "1.getting_started/4.1.textures/texture_test.h"
 #include "1.getting_started/4.2.textures_combined/textures_combined.h"
-
 #include "2.lighting/basic_lighting_colours.h"
 #include "2.lighting/basic_lighting_diffuse.h"
 #include "2.lighting/basic_lighting_specular.h"
@@ -20,9 +21,7 @@
 #include "2.lighting/light_caster_spot.h"
 #include "2.lighting/light_caster_spot_soft.h"
 #include "2.lighting/multiple_lights.h"
-
 #include "3.model_loading/model_loading.h"
-
 #include "4.advanced_opengl/1.1.depth_testing/depth_testing.h"
 #include "4.advanced_opengl/1.2.depth_testing_view/depth_testing_view.h"
 #include "4.advanced_opengl/2.stencil_testing/stencil_testing.h"
@@ -41,7 +40,6 @@
 #include "4.advanced_opengl/10.3.asteroids_instanced/asteroids_instanced.h"
 #include "4.advanced_opengl/11.1.anti_aliasing_msaa/anti_aliasing_msaa.h"
 #include "4.advanced_opengl/11.2.anti_aliasing_offscreen/anti_aliasing_offscreen.h"
-
 #include "5.advanced_lighting/1.advanced_lighting/advanced_lighting.h"
 #include "5.advanced_lighting/2.gamma_correction/gamma_correction.h"
 #include "5.advanced_lighting/3.1.1.shadow_mapping_depth/shadow_mapping_depth.h"
@@ -57,13 +55,12 @@
 #include "5.advanced_lighting/7.bloom/bloom.h"
 #include "5.advanced_lighting/8.1.deferred_shading/deferred_shading.h"
 #include "5.advanced_lighting/9.1.ssao/ssao.h"
-
 #include "7.in_practice/2.text_rendering/text_rendering.h"
-
 #include "8.guest/2020/skeletal_animation/skeletal_animation.h"
 #include "8.guest/2021/tesselation/height_maps/height_map_cpu.h"
 
 #include "opengl_bible/sec2.h"
+
 
 TestAppMgr::TestAppMgr(Window& window, Camera& camera) :
 	m_window(window), m_camera(camera)
@@ -135,6 +132,9 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case LGL_HEIGHT_MAP_CPU: return new LayerHeightMapCPU(m_camera); break;
 
 		case BIB_2: return new LayerSec2(); break;
+
+		case MISC_ANIMATED_MODEL_BASIC: return new me::BasicModelTest(m_window, m_camera); break;
+		case MISC_COMP_GEOM: return new jmk::CompGeom(m_window, m_camera); break;
 	}
 	return new CoordSys(m_camera);
 }

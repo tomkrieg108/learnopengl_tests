@@ -38,8 +38,9 @@ void ModelLoadingTest::Startup()
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
     //stbi_set_flip_vertically_on_load(true);
 
-    ourModel = new lgl::Model{ "assets/models/backpack/backpack.obj" };
+    //ourModel = new lgl::Model{ "assets/models/backpack/backpack.obj" };
     //ourModel = new lgl::Model{ "assets/models/nanosuit/nanosuit.obj" };
+    ourModel = new lgl::Model{ "assets/models/Hip Hop Dancing/Hip Hop Dancing.dae" };
     //ourModel = new lgl::Model{ "assets/models/rock/rock.obj" };
     //ourModel = new lgl::Model{ "assets/models/tropical_shrubs/01/trop_shrub_01.obj" };
     //ourModel = new lgl::Model{ "assets/models/Tree1TS/Tree1/Tree1.blend" };
@@ -48,12 +49,12 @@ void ModelLoadingTest::Startup()
     //ourModel = new lgl::Model{ "assets/models/tropical_shrubs/05/trop_shrub_05.obj" };
     //ourModel = new lgl::Model{ "assets/models/tree2/tree.glb" };
 
-    //m_shader->OutputInfo();
+    m_shader->OutputInfo();
 }
 
 void ModelLoadingTest::Shutdown()
 {
-    m_shader->OutputInfo();
+    //m_shader->OutputInfo();
 }
 
 void ModelLoadingTest::OnUpdate(double now, double time_step)
@@ -66,7 +67,8 @@ void ModelLoadingTest::OnUpdate(double now, double time_step)
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+    //model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	
+    model = glm::scale(model, glm::vec3(0.05f));
 
     m_shader->SetUniformMat4f("model", model);
 
