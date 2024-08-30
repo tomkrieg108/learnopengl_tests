@@ -103,6 +103,11 @@ int Window::Initialise()
 	//setup OpenGL viewport size (use entire window - use pixels rather than screen coords)
 	glViewport(0, 0, m_buffer_width, m_buffer_height);
 
+	//can also call glDepthRange() which sets the z coord in 'viewport space'
+	//refer sb7 ch3, section "Viewport Transformation"
+
+	//call glFrontFace() to specify the cinding order (CW or CCW) for front faces.  Default is CCW => front facing
+
 	//Used for setup of event handlers
 	glfwSetWindowUserPointer(m_glfw_window, this);
 

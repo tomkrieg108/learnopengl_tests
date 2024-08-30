@@ -1,6 +1,8 @@
 #pragma once
 
-//from Hazel
+
+#include "events.h"
+
 class Camera;
 
 class Layer
@@ -14,6 +16,7 @@ public:
 	virtual void Shutdown() {}
 	virtual void OnUpdate(double now, double delta_time) {}
 	virtual void ImGuiUpdate() {}
+	virtual void OnKeyPressed(EventKeyPressed& e) { std::cout << "Key code pressed - layer " << e.key << "\n"; }
 	//virtual void OnImGuiRender() {}
 	//virtual void OnEvent(Event& event) {}
 

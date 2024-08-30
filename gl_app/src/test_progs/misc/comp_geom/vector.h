@@ -20,7 +20,7 @@ namespace jmk
 		using Vec = Vector<coord_type, Dim>;
 
 		template <typename coord_type, size_t Dim>
-		friend coord_type Dot(Vector<coord_type, Dim> vec1, Vector<coord_type, Dim> vec2);
+		friend coord_type dotProduct(Vector<coord_type, Dim> vec1, Vector<coord_type, Dim> vec2);
 
 		Vector() {}
 
@@ -95,18 +95,37 @@ namespace jmk
 			return false;
 		}
 
-		coord_type operator [](uint32_t idx) const
+		coord_type operator[](uint32_t idx) const
 		{
 			assert(idx < m_coords.size());
 			return m_coords[idx];
 		}
 
-		void Assign(int idx, coord_type value)
+		VecCoords& Data() { return m_coords;}
+
+		void assign(int idx, coord_type value)
 		{
 			assert(idx < m_coords.size());
 			m_coords[idx] = value;
 		}
 
+		// Return the magnitude of the the vector (mod(A) / |A|)
+		coord_type magnitude() const
+		{
+			coord_type value = 0.0f;
+			for (uint32_t i = 0; i < Dim; i++)
+				value += std::powf(m_coords[i], 2.0);
+			
+			return std::sqrtf(value);
+		}
+
+		// Normalize the vector
+		void normalize()
+		{
+			coord_type mag = magnitude();
+			for (uint32_t i = 0; i < Dim; i++)
+				assign(i, m_coords[i] / mag);
+		}
 		
 	private:
 
@@ -117,11 +136,13 @@ namespace jmk
 
 	};
 
-	using Vec2f = Vector<float, 2>;
-	using Vec3f = Vector<float, 3>;
+	using Vector2f = Vector<float, 2>;
+	using Vector3f = Vector<float, 3>;
+
+	
 
 	template <typename coord_type, size_t Dim>
-	coord_type Dot(Vector<coord_type, Dim> vec1, Vector< coord_type, Dim> vec2)
+	coord_type dotProduct(Vector<coord_type, Dim> vec1, Vector< coord_type, Dim> vec2)
 	{
 		assert(vec1.m_coords.size() == vec2.m_coords.size());
 		coord_type value{ 0 };
@@ -131,7 +152,8 @@ namespace jmk
 		return value;
 	}
 
-	float Cross2D(Vec2f v1, Vec2f v2);
-	Vec3f Cross3D(Vec3f v1, Vec3f v2);
+	float crossProduct2d(Vector2f v1, Vector2f v2);
+	Vector3f crossProduct3d(Vector3f v1, Vector3f v2);
+	float scalarTripleProduct(Vector3f a, Vector3f b, Vector3f c);
 
 }

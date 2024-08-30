@@ -1,5 +1,6 @@
 
-
+//Vertex shader runs once per control point (essentially once per vertex)
+// Results passed to TCS in batch of vertices equal to the number of control points - in this case, 3
 #version 450 core
  void main(void)
 {

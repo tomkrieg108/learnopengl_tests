@@ -42,8 +42,8 @@ protected:
 	GLfloat m_pitch = 0.0f;			//up and down (rotation about x)
 	//GLfloat m_roll;				//not used tilt left and right (rotation about z)
 
-	GLfloat m_near = 0.2f;
-	GLfloat m_far = 100.0f;
+	GLfloat m_near = 0.1f;
+	GLfloat m_far = 500.0f;
 
 	glm::vec3 m_front;
 	glm::vec3 m_right;
@@ -54,44 +54,7 @@ protected:
 };
 
 
-//Don't think this is used for anything!!
-/*
-struct PerspectiveProj
-{
-	PerspectiveProj(float width, float height)
-	{
-		SetAspectRatio(width, height);
-	}
-	PerspectiveProj() = delete;
 
-	~PerspectiveProj() = default;
-
-	void SetAspectRatio(float width, float height)
-	{
-		m_aspect_ratio = width / height;
-	}
-	
-	void PerspectiveProj::Zoom(float amount)
-	{
-		m_fov += amount;
-		if (m_fov > 60.0f)
-			m_fov = 60.0f;
-		if (m_fov < 15.0f)
-			m_fov = 15.0f;
-	}
-	glm::mat4 ProjMatrix()
-	{
-		return glm::perspective(glm::radians(m_fov), m_aspect_ratio, m_near, m_far);
-	}
-
-public:
-	GLfloat m_aspect_ratio; // width/height
-	GLfloat m_fov = 45.0f; // Field of view - In degrees
-	GLfloat m_near = 1.0f;
-	GLfloat m_far = 100000.0f;
-};
-
-*/
 
 class PerspectiveCamera : public Camera
 {
@@ -107,6 +70,8 @@ public:
 	glm::mat4 ProjMatrix() override;
 	void Zoom(float amount) override;
 	void SetAspectRatio(float width, float height);
+	GLfloat FOV() const { return m_fov; }
+
 private:
 	GLfloat m_aspect_ratio; // width/height
 	GLfloat m_fov = 45.0f; // Field of view - In degrees

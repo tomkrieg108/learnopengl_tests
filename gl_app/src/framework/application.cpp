@@ -54,7 +54,7 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKYBOX);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_ENV_MAPPING);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_ADVANCED_GLSL_UBO);
-	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_GEOMETRY_SHADER_HOUSES);
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_GEOMETRY_SHADER_HOUSES);
   //m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_GEOMETRY_SHADER_EXPLODING);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_NORMAL_VISUALISATION);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_INSTANCING_QUADS);
@@ -82,11 +82,17 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_TEXT_RENDERING);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_CPU);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_CSM);
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SCENE_GRAPH);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_TESSELATION);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKELETAL_ANIMATION);
 
-	//m_layer = test_app_mgr.GetLayer(TestAppMgr::BIB_2);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_POINT);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_TRIANGLE);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_MOVING_TRIANGLE);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_TESSELATED_TRIANGLE);
 
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_ANIMATED_MODEL_BASIC);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_ANIMATED_MODEL_BASIC);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_COMP_GEOM);
 
 		
@@ -133,6 +139,7 @@ void App::Shutdown()
 void App::Render(double now, double time_step)
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	//sb7 calls glClearBufferfv() - see location 1271
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // don't forget to clear the stencil buffer!
 	if (m_coords)
 		m_coords->OnUpdate(now, time_step);
@@ -312,7 +319,7 @@ void App::OnKeyPressed(EventKeyPressed& e)
 	{
 		return;
 	}
-	std::cout << "Key code pressed " << e.key << "\n";
+	m_layer->OnKeyPressed(e);
 }
 
 void App::OnKeyReleased(EventKeyReleased& e)

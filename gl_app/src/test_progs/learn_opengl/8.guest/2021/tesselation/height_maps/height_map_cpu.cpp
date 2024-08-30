@@ -35,7 +35,7 @@ void LayerHeightMapCPU::Startup()
 	unsigned char* data = stbi_load(texture.c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{
-		std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
+		std::cout << "Loaded heightmap of size (HxW) " << height << " x " << width << " Channels: " << nrChannels << std::endl;
 	}
 	else
 	{
@@ -116,7 +116,7 @@ void LayerHeightMapCPU::OnUpdate(double now, double time_step)
 	m_shader->SetUniformMat4f("view", m_camera.ViewMatrix());
 	m_shader->SetUniformMat4f("model", glm::mat4(1.0f));
 
-	// render the cube
+	// render the terrain
 	glBindVertexArray(terrainVAO);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	for (unsigned strip = 0; strip < numStrips; strip++)
