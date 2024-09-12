@@ -90,6 +90,7 @@ void AdvancedGLSL_UBO::Startup()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     // configure a uniform buffer object
+    // //More info on this in sb7 book, ch5 - straight after listing 5.19
   // ---------------------------------
   // first. We get the relevant block indices
     unsigned int uniformBlockIndexRed = glGetUniformBlockIndex(shaderRed->GetProgramID(), "Matrices");

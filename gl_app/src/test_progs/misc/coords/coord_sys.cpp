@@ -4,9 +4,10 @@
 #include "shader.h"
 
 
-CoordSys::CoordSys(Camera& camera) :
-	m_camera(camera)
+CoordSys::CoordSys(Camera* camera, v2::Camera* camera2) :
+	m_camera(camera), m_camera2(camera2)
 {
+	int a = 1;
 }
 
 void CoordSys::Startup()
@@ -62,12 +63,12 @@ void CoordSys::Startup()
 	//world coord sys
 	float y_offset = 0.01f;
 	float axis_length = extent;
-	Vertex origin_x = { {0,y_offset,0},{0,0,1,1} };	//x=>blue
+	Vertex origin_x = { {0,y_offset,0},{1,0,0,1} };	//x=>red
 	Vertex origin_y = { {0,y_offset,0},{0,1,0,1} };	//y=>green
-	Vertex origin_z = { {0,y_offset,0},{1,0,0,1} };	//z=>red
-	Vertex terminal_x = { {axis_length,y_offset,0},{0,0,1,1} };
+	Vertex origin_z = { {0,y_offset,0},{0,0,1,1} };	//z=>blue
+	Vertex terminal_x = { {axis_length,y_offset,0},{1,0,0,1} };
 	Vertex terminal_y = { {0,axis_length,0},{0,1,0,1} };
-	Vertex terminal_z = { {0,y_offset,axis_length},{1,0,0,1} };
+	Vertex terminal_z = { {0,y_offset,axis_length},{0,0,1,1} };
 	m_verticies.push_back(origin_x); m_verticies.push_back(terminal_x);
 	m_verticies.push_back(origin_y); m_verticies.push_back(terminal_y);
 	m_verticies.push_back(origin_z); m_verticies.push_back(terminal_z);
@@ -95,8 +96,17 @@ void CoordSys::OnUpdate(double now, double time_step)
 {
 	m_shader->Bind();
 	m_shader->SetUniformMat4f("u_model", glm::mat4(1.0f));
-	m_shader->SetUniformMat4f("u_view", m_camera.ViewMatrix());
-	m_shader->SetUniformMat4f("u_proj", m_camera.ProjMatrix());
+
+	if (m_camera != nullptr)
+	{
+		m_shader->SetUniformMat4f("u_view", m_camera->ViewMatrix());
+		m_shader->SetUniformMat4f("u_proj", m_camera->ProjMatrix());
+	}
+	else
+	{
+		m_shader->SetUniformMat4f("u_view", m_camera2->GetViewMatrix());
+		m_shader->SetUniformMat4f("u_proj", m_camera2->GetProjMatrix());		
+	}
 
 	glBindVertexArray(va);
 	//glLineWidth(2.0f); //cannot do in openGL 3.2 + gives a INVALID_VALUE error

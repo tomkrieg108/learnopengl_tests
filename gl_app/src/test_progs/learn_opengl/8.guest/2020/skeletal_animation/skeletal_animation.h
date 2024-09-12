@@ -1,9 +1,12 @@
+#pragma once
+
+#include "camera.h"
 #include "layer.h"
 #include "model_animation.h"
 #include "animator.h"
 
 class Shader;
-class Camera;
+//class Camera;
 class Window;
 
 //Screen-space ambient occlusion

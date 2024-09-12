@@ -282,6 +282,7 @@ unsigned int CSM::LoadTexture(char const* path)
 
 std::vector<glm::vec4> CSM::GetFrustumCornersWorldSpace(const glm::mat4& projview)
 {
+  //converts from NDC 
   const auto inv = glm::inverse(projview);
 
   std::vector<glm::vec4> frustumCorners;
@@ -303,6 +304,7 @@ std::vector<glm::vec4> CSM::GetFrustumCornersWorldSpace(const glm::mat4& projvie
 std::vector<glm::vec4> CSM::GetFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
 {
   //investigating !! ---------------------------------------------------
+  //See smaller brown notebook for the math (up the back)
   glm::vec4 coord = glm::vec4{2,3,-10,1};
   glm::vec4 coord_clip = proj * coord;
   glm::vec4 coord_ndc = coord_clip / coord_clip.w;

@@ -16,15 +16,16 @@ App App::s_instance;
 
 App::App()
 {
-	//m_window = std::make_unique<Window>();
 	m_window = new Window();
 
 	float aspect_ratio = (float)m_window->BufferWidth() / (float)m_window->BufferHeight();
 	m_camera = new PerspectiveCamera(aspect_ratio);
-	//m_camera = new OrthographicCamera();
+	m_camera2 = new v2::Camera();
+	m_camera2->SetAspectRatio((float)m_window->BufferWidth(), (float)m_window->BufferHeight());
+	
+	TestAppMgr test_app_mgr(*m_window, *m_camera, *m_camera2);
 
-	TestAppMgr test_app_mgr(*m_window, *m_camera);
-	m_coords = test_app_mgr.GetLayer(TestAppMgr::COORD_SYS);
+	m_coords = test_app_mgr.GetLayer(TestAppMgr::COORD_SYS_CAM1);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_TEXTURE_TEST);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_TEXTURES_COMBINED_TEST);
@@ -54,7 +55,7 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKYBOX);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_ENV_MAPPING);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_ADVANCED_GLSL_UBO);
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_GEOMETRY_SHADER_HOUSES);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_GEOMETRY_SHADER_HOUSES);
   //m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_GEOMETRY_SHADER_EXPLODING);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_NORMAL_VISUALISATION);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_INSTANCING_QUADS);
@@ -83,7 +84,7 @@ App::App()
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_CPU);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_CSM);
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SCENE_GRAPH);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SCENE_GRAPH);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_TESSELATION);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKELETAL_ANIMATION);
 
@@ -91,9 +92,25 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_TRIANGLE);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_MOVING_TRIANGLE);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_TESSELATED_TRIANGLE);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_GEOM_TRIANGLE);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_CH5_VERTEX_ARRAYS);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_ANIMATED_MODEL_BASIC);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_COMP_GEOM);
+	
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_DIR_SHADOW_VISUALISED2);
+
+	/*---------------------------------------------------------------------
+	Everything following this uses m_camera2 instead of m_camera => uncomment next line if using
+	-----------------------------------------------------------------------*/
+	if (m_coords)
+	{
+		delete m_coords;
+		m_coords = test_app_mgr.GetLayer(TestAppMgr::COORD_SYS_CAM2);
+	}
+	
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_DIR_SHADOW_VISUALISED);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_CSM_VISUALISED);
 
 		
 	EventManager::SetCallback(this, &App::OnMouseMove);
@@ -124,7 +141,8 @@ void App::Startup()
 {
 	if(m_coords)
 		m_coords->Startup();
-	m_layer->Startup();
+	if(m_layer)
+		m_layer->Startup();
 	App::ImGuiInit();
 }
 
@@ -132,7 +150,8 @@ void App::Shutdown()
 {
 	if (m_coords)
 		m_coords->Shutdown();
-	m_layer->Shutdown();
+	if (m_layer)
+		m_layer->Shutdown();
 	App::ImGuiShutdown();
 }
 
@@ -141,9 +160,11 @@ void App::Render(double now, double time_step)
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	//sb7 calls glClearBufferfv() - see location 1271
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // don't forget to clear the stencil buffer!
+	
+	if (m_layer)
+		m_layer->OnUpdate(now, time_step);
 	if (m_coords)
 		m_coords->OnUpdate(now, time_step);
-	m_layer->OnUpdate(now, time_step);
 }
 
 void App::Run()
@@ -213,8 +234,6 @@ void App::ImGuiUpdate()
 
 	if (ImGui::CollapsingHeader("Camera"))
 	{
-		//ImGui::Text("Info re Camera");
-
 		ImGui::SliderFloat3("Position ", &(m_camera->Position()[0]), -100.0f, 100.0f);
 		ImGui::SliderFloat3("Front ", &(m_camera->Front()[0]), -1.01f, 1.01f);
 		ImGui::SliderFloat3("Up    ", &(m_camera->Up()[0]), -1.01f, 1.01f);
@@ -228,7 +247,6 @@ void App::ImGuiUpdate()
 		ImGui::SliderFloat("Yaw", &yaw, -180.0f, 180.0f);
 		ImGui::SliderFloat("Pitch", &pitch, -180.0f, 180.0f);
 		//ImGui::SliderFloat("FOV", &(m_camera->F), 15.0f, 75.0f);
-
 		ImGui::SliderFloat("Z Near", &near, 0.01f, 2.0f);
 		ImGui::SliderFloat("Z Far", &far, 80.0f, 200.0f);
 	}
@@ -250,7 +268,8 @@ void App::ImGuiRender()
 	App::ImGuiNewFrame();
 
 	App::ImGuiUpdate();
-	m_layer->ImGuiUpdate();
+	if(m_layer)
+		m_layer->ImGuiUpdate();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -279,6 +298,20 @@ void App::OnMouseMove(EventMouseMove& e)
 	const float sensitivity = 0.1f;
  	m_camera->Turn(e.delta_x * sensitivity, e.delta_y * sensitivity);
 	//std::cout << "Mouse move x y:" << e.delta_x << "," << e.delta_y << "\n";
+
+	auto* window = m_window->GlfwWindow();
+	auto state = glfwGetMouseButton(window, static_cast<int32_t>(GLFW_MOUSE_BUTTON_MIDDLE));
+	if (state == GLFW_PRESS)
+	{
+
+	}
+
+	if (keys[GLFW_KEY_LEFT_CONTROL])
+		m_camera2->RotateWorld(e.delta_x * 0.03f, e.delta_y * 0.03f);
+	else if(keys[GLFW_KEY_LEFT_SHIFT])
+		m_camera2->MoveForward((e.delta_x + e.delta_y) * 0.01f);
+	else
+		m_camera2->RotateLocal(e.delta_x * 0.001f, e.delta_y * 0.05f);
 }
 
 void App::OnMouseLDown(EventMouseLDown& e)
@@ -309,6 +342,8 @@ void App::OnMouseMUp(EventMouseMUp& e)
 void App::OnMouseScroll(EventMouseScroll& e)
 {
 	m_camera->Zoom(e.y_offset);
+
+	m_camera2->Zoom(e.y_offset);
 	//std::cout << "Mouse scroll \n";
 }
 
@@ -336,6 +371,7 @@ void App::OnKeyReleased(EventKeyReleased& e)
 void App::OnWinResize(EventWinResize& e)
 {
 	m_camera->SetAspectRatio((float)e.buffer_width, (float)e.buffer_height);
+	m_camera2->SetAspectRatio((float)e.buffer_width, (float)e.buffer_height);
 	//std::cout << "Win Resize\n";
 }
 
@@ -351,21 +387,25 @@ void App::CheckKeys(double delta_time)
 		if (keys[GLFW_KEY_W])
 		{
 			m_camera->MoveForward(move_speed * t);
+			m_camera2->MoveForward(-move_speed * t);  //note the negative value needed to move forward
 		}
 
 		if (keys[GLFW_KEY_S])
 		{
 			m_camera->MoveForward(-move_speed * t);
+			m_camera2->MoveForward(move_speed * t); //note the positive value needed to move backward
 		}
 
 		if (keys[GLFW_KEY_A])
 		{
 			m_camera->MoveRight(-move_speed * t);
+			m_camera2->MoveRight(-move_speed * t);
 		}
 
 		if (keys[GLFW_KEY_D])
 		{
 			m_camera->MoveRight(move_speed * t);
+			m_camera2->MoveRight(move_speed * t);
 		}
 
 	}

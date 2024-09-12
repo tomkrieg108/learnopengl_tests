@@ -1,9 +1,9 @@
 #pragma once
-
+#include "camera.h"
 #include "layer.h"
 
 class Shader;
-class Camera;
+//class Camera;
 class Window;
 
 class ShadowMappingBase : public Layer
@@ -42,6 +42,12 @@ private:
 	unsigned int textureColorbuffer = 0;
 
 	glm::vec3 lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
+
+	//NOTE:  size of depth map inpacts frame rate wuite a bit (bigger = slower)!
+	//const unsigned int SHADOW_WIDTH = 16000, SHADOW_HEIGHT = 16000;
+	//const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	//const unsigned int SHADOW_WIDTH = 256, SHADOW_HEIGHT = 256;
+	//const unsigned int SHADOW_WIDTH = 64, SHADOW_HEIGHT = 64;
 };
 

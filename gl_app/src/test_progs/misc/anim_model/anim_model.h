@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "camera.h"
 #include "layer.h"
 
 #include <assimp/Importer.hpp>
@@ -8,7 +9,7 @@
 
 
 class Shader;
-class Camera;
+//class Camera;
 class Window;
 //struct aiScene;
 //struct aiMesh;

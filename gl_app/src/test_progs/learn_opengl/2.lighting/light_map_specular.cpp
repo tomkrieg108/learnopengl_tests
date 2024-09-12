@@ -118,6 +118,7 @@ void LightMapSpecular::Startup()
 
     // first, configure the cube's VAO (and VBO)
     glGenVertexArrays(1, &cubeVAO);
+    //glCreateVertexArrays(1, &cubeVAO); //v4.5+
     glGenBuffers(1, &VBO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -133,6 +134,7 @@ void LightMapSpecular::Startup()
 
     // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
     glGenVertexArrays(1, &lightCubeVAO);
+    //glCreateVertexArrays(1, &lightCubeVAO); //v4.5+
     glBindVertexArray(lightCubeVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);

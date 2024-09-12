@@ -1,11 +1,11 @@
 //https://learnopengl.com/Lighting/Basic-Lighting
 
 #pragma once
-
+#include "camera.h"
 #include "layer.h"
 
 class Shader;
-class Camera;
+//class Camera;
 
 class BasicLightingSpecular : public Layer
 {

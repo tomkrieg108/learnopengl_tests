@@ -1,10 +1,12 @@
 //https://learnopengl.com/Guest-Articles/2021/Tessellation/Height-map
 
 #pragma once
+
+#include "camera.h"
 #include "layer.h"
 
 class Shader;
-class Camera;
+//class Camera;
 
 class LayerHeightMapCPU : public Layer
 {

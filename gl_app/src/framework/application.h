@@ -1,10 +1,11 @@
 #pragma once
 
+#include "camera.h"
 #include "events.h"
 #include "test_app.h"
 
 class Window;
-class PerspectiveCamera;
+//class PerspectiveCamera;
 class Layer;
 
 class App
@@ -28,15 +29,9 @@ public:
 	void CheckKeys(double delta_time);
 
 
-	PerspectiveCamera* GetCamera()
-	{
-		return m_camera;
-	}
+	PerspectiveCamera* GetCamera() { return m_camera; }
+	Window* GetWindow() { return m_window; }
 
-	/*OrthographicCamera* GetCamera()
-	{
-		return m_camera;
-	}*/
 	
 private:
 	App();
@@ -54,10 +49,10 @@ private:
 	void ImGuiNewFrame();
 
 private:
-	//std::unique_ptr<Window> m_window
+
 	Window* m_window = nullptr;
 	PerspectiveCamera* m_camera = nullptr;
-	//OrthographicCamera* m_camera = nullptr;
+	v2::Camera* m_camera2 = nullptr;
 	Layer* m_layer = nullptr;
 	Layer* m_coords = nullptr;
 

@@ -113,9 +113,18 @@ int Window::Initialise()
 
 	//glfwSetInputMode(m_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	//glfwSetInputMode(m_glfw_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-	return 0;
 
-	
+	//SB7 cha3 - extensions
+	/*int extenstion_count = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &extenstion_count);
+	std::cout << "Extensions suppoted - " << extenstion_count << ": \n";
+	for (int i = 0; i < extenstion_count; i++)
+	{
+		const GLubyte* ext_name = glGetStringi(GL_EXTENSIONS, i);
+		std::cout << (char*)(ext_name) << "\n";
+	}*/
+
+	return 0;
 }
 
 void Window::ClearScreeen()

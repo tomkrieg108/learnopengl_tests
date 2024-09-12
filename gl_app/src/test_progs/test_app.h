@@ -1,6 +1,8 @@
 #pragma once
 
-class Camera;
+#include "camera.h"
+
+//class Camera;
 class Window;
 class Layer;
 
@@ -8,12 +10,13 @@ class TestAppMgr
 {
 public:
 
-	TestAppMgr(Window& window, Camera& camera);
+	TestAppMgr(Window& window, Camera& camera, v2::Camera& camera2);
 	Layer* GetLayer(uint32_t id);
 
 	enum
 	{
-		COORD_SYS,
+		COORD_SYS_CAM1,
+		COORD_SYS_CAM2,
 
 		LGL_TEXTURE_TEST,
 		LGL_TEXTURES_COMBINED_TEST,
@@ -80,12 +83,18 @@ public:
 		SB7_TRIANGLE,
 		SB7_MOVING_TRIANGLE,
 		SB7_TESSELATED_TRIANGLE,
+		SB7_GEOM_TRIANGLE,
+		SB7_CH5_VERTEX_ARRAYS,
 
 		MISC_ANIMATED_MODEL_BASIC,
 		MISC_COMP_GEOM,
+		MISC_DIR_SHADOW_VISUALISED,
+		MISC_DIR_SHADOW_VISUALISED2,
+		MISC_CSM_VISUALISED
 	};
 
 private:
 	Camera& m_camera;
+	v2::Camera& m_camera2;
 	Window& m_window;
 };

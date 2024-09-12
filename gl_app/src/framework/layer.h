@@ -1,9 +1,9 @@
 #pragma once
 
-
+#include "camera.h"
 #include "events.h"
 
-class Camera;
+//class Camera;
 
 class Layer
 {

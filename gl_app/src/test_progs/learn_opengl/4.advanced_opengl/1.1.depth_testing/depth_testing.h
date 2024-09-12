@@ -1,9 +1,9 @@
 #pragma once
-
+#include "camera.h"
 #include "layer.h"
 
 class Shader;
-class Camera;
+//class Camera;
 
 class DepthTesting : public Layer
 {

@@ -1,10 +1,10 @@
 #pragma once
-
+#include "camera.h"
 #include "layer.h"
 #include "lgl_model.h"
 
 class Shader;
-class Camera;
+//class Camera;
 class Window;
 
 //Screen-space ambient occlusion

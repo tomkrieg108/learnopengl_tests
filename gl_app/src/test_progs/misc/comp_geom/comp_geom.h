@@ -1,9 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "camera.h"
 #include "layer.h"
 
 class Shader;
-class Camera;
+//class Camera;
 class Window;
 
 namespace jmk

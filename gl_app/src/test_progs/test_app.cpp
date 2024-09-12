@@ -6,6 +6,9 @@
 #include "misc/coords/coord_sys.h"
 #include "misc/anim_model/anim_model.h"
 #include "misc/comp_geom/comp_geom.h"
+#include "misc/dir_shadows_visualised/shadow_mapping.h"
+#include "misc/dir_shadows_visualised/shadow_mapping2.h"
+#include "misc/csm_shadows_visualised/csm.h"
 
 #include "1.getting_started/4.1.textures/texture_test.h"
 #include "1.getting_started/4.2.textures_combined/textures_combined.h"
@@ -62,14 +65,16 @@
 #include "8.guest/2021/tesselation/height_maps/height_map_cpu.h"
 #include "8.guest/2021/tesselation/tesselation/tesselation.h"
 
-#include "opengl_bible/ch2.1_point.h"
-#include "opengl_bible/ch2.2_triangle.h"
-#include "opengl_bible/ch3.1_moving_triangle.h"
-#include "opengl_bible/ch3.2_tesselated_triangle.h"
+#include "opengl_bible/ch2/ch2.1_point.h"
+#include "opengl_bible/ch2/ch2.2_triangle.h"
+#include "opengl_bible/ch3/ch3.1_moving_triangle.h"
+#include "opengl_bible/ch3/ch3.2_tesselated_triangle.h"
+#include "opengl_bible/ch3/ch3.3_geom_triangle.h"
+#include "opengl_bible/ch5/buffers/vertex_array_4_5.h"
 
 
-TestAppMgr::TestAppMgr(Window& window, Camera& camera) :
-	m_window(window), m_camera(camera)
+TestAppMgr::TestAppMgr(Window& window, Camera& camera, v2::Camera& camera2) :
+	m_window(window), m_camera(camera), m_camera2(camera2)
 {
 }
 
@@ -77,7 +82,8 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 {
 	switch (id)
 	{
-		case COORD_SYS: return new CoordSys(m_camera);
+		case COORD_SYS_CAM1: return new CoordSys(&m_camera, nullptr);
+		case COORD_SYS_CAM2: return new CoordSys(nullptr, &m_camera2);
 
 		case LGL_TEXTURE_TEST: return new TextureTest(); break;
 		case LGL_TEXTURES_COMBINED_TEST: return new TexturesCombinedTest(); break;
@@ -144,10 +150,16 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case SB7_TRIANGLE: return new sb7::TriangleTest(); break;
 		case SB7_MOVING_TRIANGLE: return new sb7::MovingTriangle(); break;
 		case SB7_TESSELATED_TRIANGLE: return new sb7::TesselatedTriangle(); break;
+		case SB7_GEOM_TRIANGLE: return new sb7::GeomTriangle(); break;
+		case SB7_CH5_VERTEX_ARRAYS: return new sb7::LightMapSpecular(m_camera); break;
 
 		case MISC_ANIMATED_MODEL_BASIC: return new me::BasicModelTest(m_window, m_camera); break;
 		case MISC_COMP_GEOM: return new jmk::CompGeom(m_window, m_camera); break;
+		case MISC_DIR_SHADOW_VISUALISED2: return new me::ShadowMappingVisualised2(m_window, m_camera);
+
+		case MISC_DIR_SHADOW_VISUALISED: return new me::ShadowMappingVisualised(m_window, m_camera2);
+		case MISC_CSM_VISUALISED: return new me::CSMVisualised(m_window, m_camera); break;
 	}
-	return new CoordSys(m_camera);
+	return new CoordSys(&m_camera, nullptr);
 }
 
