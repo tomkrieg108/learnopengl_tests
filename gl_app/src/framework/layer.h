@@ -3,8 +3,6 @@
 #include "camera.h"
 #include "events.h"
 
-//class Camera;
-
 class Layer
 {
 public:
@@ -14,11 +12,10 @@ public:
 	virtual void OnDetach() {}
 	virtual void Startup() {}
 	virtual void Shutdown() {}
-	virtual void OnUpdate(double now, double delta_time) {}
+	virtual void CheckKeys(double delta_time) {}
 	virtual void ImGuiUpdate() {}
-	virtual void OnKeyPressed(EventKeyPressed& e) { std::cout << "Key code pressed - layer " << e.key << "\n"; }
-	//virtual void OnImGuiRender() {}
-	//virtual void OnEvent(Event& event) {}
+	virtual void OnUpdate(double now, double delta_time) {}
+	virtual void OnEvent(Event& event) {}
 
 	const std::string& GetName() const { return m_debug_name; }
 protected:

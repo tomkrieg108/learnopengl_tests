@@ -2,15 +2,6 @@
 
 #include "base.h"
 
-/*
-	//strongly typed - need to cast to (size_t) to use as ints
-	enum class Type : int32_t
-	{
-	kNone, kMouseMove, kMouseLDown, kMouseLUp, kMouseRDown, kMouseRUp,
-	kMouseScroll, kKeyPressed, kKeyReleased, kWinResize, kWinMove, kCount
-	};
-	*/
-
 struct Event
 {
 public:
@@ -32,8 +23,8 @@ public:
 		kCount
 	};
 	virtual ~Event() = default;
-	virtual int32_t type() { return kAny; }
-	static int32_t count() { return kCount; }
+	virtual int32_t Type() { return kAny; }
+	static int32_t Count() { return kCount; }
 
 private:
 	bool handled = false;
@@ -46,8 +37,8 @@ struct EventKeyPressed : public Event
 
 	int32_t key;
 
-	int32_t type() override { return Event::kKeyPressed; }
-	static uint32_t static_type() { return Event::kKeyPressed; }
+	int32_t Type() override { return Event::kKeyPressed; }
+	static uint32_t StaticType() { return Event::kKeyPressed; }
 };
 
 struct EventKeyReleased : public Event
@@ -57,8 +48,8 @@ struct EventKeyReleased : public Event
 
 	int32_t key;
 
-	int32_t type() override { return Event::kKeyReleased; }
-	static uint32_t static_type() { return Event::kKeyReleased; }
+	int32_t Type() override { return Event::kKeyReleased; }
+	static uint32_t StaticType() { return Event::kKeyReleased; }
 };
 
 
@@ -73,8 +64,8 @@ struct EventMouseMove : public Event
 	float x, y;
 	float delta_x, delta_y;
 
-	int32_t type() override { return Event::kMouseMove; }
-	static uint32_t static_type() { return Event::kMouseMove; }
+	int32_t Type() override { return Event::kMouseMove; }
+	static uint32_t StaticType() { return Event::kMouseMove; }
 };
 
 struct EventMouseScroll : public Event
@@ -86,8 +77,8 @@ struct EventMouseScroll : public Event
 
 	float x_offset, y_offset;
 
-	int32_t type() override { return Event::kMouseScroll; }
-	static uint32_t static_type() { return Event::kMouseScroll; }
+	int32_t Type() override { return Event::kMouseScroll; }
+	static uint32_t StaticType() { return Event::kMouseScroll; }
 };
 
 struct EventMouseLDown : public Event
@@ -96,8 +87,8 @@ struct EventMouseLDown : public Event
 	EventMouseLDown(float _x, float _y) : x{ _x }, y{ _y } {}
 
 	float x, y;
-	int32_t type() override { return Event::kMouseLDown; }
-	static uint32_t static_type() { return Event::kMouseLDown; }
+	int32_t Type() override { return Event::kMouseLDown; }
+	static uint32_t StaticType() { return Event::kMouseLDown; }
 };
 
 struct EventMouseLUp : public Event
@@ -106,8 +97,8 @@ struct EventMouseLUp : public Event
 	EventMouseLUp(float _x, float _y) : x{ _x }, y{ _y } {}
 
 	float x, y;
-	int32_t type() override { return Event::kMouseLUp; }
-	static uint32_t static_type() { return Event::kMouseLUp; }
+	int32_t Type() override { return Event::kMouseLUp; }
+	static uint32_t StaticType() { return Event::kMouseLUp; }
 };
 
 struct EventMouseRDown : public Event
@@ -116,8 +107,8 @@ struct EventMouseRDown : public Event
 	EventMouseRDown(float _x, float _y) : x{ _x }, y{ _y } {}
 
 	float x, y;
-	int32_t type() override { return Event::kMouseRDown; }
-	static uint32_t static_type() { return Event::kMouseRDown; }
+	int32_t Type() override { return Event::kMouseRDown; }
+	static uint32_t StaticType() { return Event::kMouseRDown; }
 };
 
 struct EventMouseRUp : public Event
@@ -126,8 +117,8 @@ struct EventMouseRUp : public Event
 	EventMouseRUp(float _x, float _y) : x{ _x }, y{ _y } {}
 
 	float x, y;
-	int32_t type() override { return Event::kMouseRUp; }
-	static uint32_t static_type() { return Event::kMouseRUp; }
+	int32_t Type() override { return Event::kMouseRUp; }
+	static uint32_t StaticType() { return Event::kMouseRUp; }
 };
 
 struct EventMouseMDown : public Event
@@ -136,8 +127,8 @@ struct EventMouseMDown : public Event
 	EventMouseMDown(float _x, float _y) : x{ _x }, y{ _y } {}
 
 	float x, y;
-	int32_t type() override { return Event::kMouseMDown; }
-	static uint32_t static_type() { return Event::kMouseMDown; }
+	int32_t Type() override { return Event::kMouseMDown; }
+	static uint32_t StaticType() { return Event::kMouseMDown; }
 };
 
 struct EventMouseMUp : public Event
@@ -146,8 +137,8 @@ struct EventMouseMUp : public Event
 	EventMouseMUp(float _x, float _y) : x{ _x }, y{ _y } {}
 
 	float x, y;
-	int32_t type() override { return Event::kMouseMUp; }
-	static uint32_t static_type() { return Event::kMouseMUp; }
+	int32_t Type() override { return Event::kMouseMUp; }
+	static uint32_t StaticType() { return Event::kMouseMUp; }
 };
 
 struct EventWinResize : public Event
@@ -158,8 +149,8 @@ struct EventWinResize : public Event
 
 	int32_t buffer_width, buffer_height;
 
-	int32_t type() override { return Event::kWinResize; }
-	static uint32_t static_type() { return Event::kWinResize; }
+	int32_t Type() override { return Event::kWinResize; }
+	static uint32_t StaticType() { return Event::kWinResize; }
 };
 
 template<typename E> using CallbackFn = std::function<void(E&)>;
@@ -215,16 +206,16 @@ public:
 	static void SetCallback(T* instance, void (T::* callback_fn)(E&))
 	{
 		IEventCallback* callback = EventManager::MakeCallback(instance, callback_fn);
-		s_instance.m_callback_list[E::static_type()] = callback;
+		s_instance.m_callback_list[E::StaticType()] = callback;
 	}
 
 	template<typename E>
 	static void Dispatch(E& event)
 	{
-		ASSERT(s_instance.m_callback_list[E::static_type()] != nullptr);
+		ASSERT(s_instance.m_callback_list[E::StaticType()] != nullptr);
 
-		s_instance.m_callback_list[E::static_type()]->SetEvent(event);
-		s_instance.m_callback_list[E::static_type()]->Dispatch();
+		s_instance.m_callback_list[E::StaticType()]->SetEvent(event);
+		s_instance.m_callback_list[E::StaticType()]->Dispatch();
 	}
 
 	static EventManager& instance() { return s_instance; }

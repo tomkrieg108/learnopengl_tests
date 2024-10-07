@@ -19,12 +19,10 @@ output_dir = "%{cfg.platform}-%{cfg.buildcfg}"
 
 project "gl_app"
 
-	
 	location "%{prj.name}"
 	kind "ConsoleApp"
 	targetdir ("bin/" .. output_dir)
-  objdir ("bin-obj/" .. output_dir)
-
+	objdir ("bin-obj/" .. output_dir)
 	pchheader "pch.h"
 	pchsource "%{prj.location}/src/framework/pch.cpp"
 	
@@ -32,17 +30,28 @@ project "gl_app"
 	{ 
 		"%{prj.location}/src/**.h", 
 		"%{prj.location}/src/**.cpp", 
-		vendor_dir .. "/glm/**.hpp",
+
+		 "%{vendor_dir}/glm/*.hpp",
+		--vendor_dir .. "/glm/**.hpp",
 		--vendor_dir .. "/imgui/**.cpp",
 		--vendor_dir .. "/imgui/**.h",
 
 		--Files are taken from c:/dev/vendor
-        "%{vendor_dir}/imgui/*.cpp",
-	    "%{vendor_dir}/imgui/*.h",
-		"%{vendor_dir}/imgui/backends/imgui_impl_glfw.cpp",
-		"%{vendor_dir}/imgui/backends/imgui_impl_opengl3.cpp",
-		"%{vendor_dir}/imgui/backends/imgui_impl_glfw.h",
-		"%{vendor_dir}/imgui/backends/imgui_impl_opengl3.h",
+        --"%{vendor_dir}/imgui/*.cpp",
+	    --"%{vendor_dir}/imgui/*.h",
+		--"%{vendor_dir}/imgui/backends/imgui_impl_glfw.cpp",
+		--"%{vendor_dir}/imgui/backends/imgui_impl_opengl3.cpp",
+		--"%{vendor_dir}/imgui/backends/imgui_impl_glfw.h",
+		--"%{vendor_dir}/imgui/backends/imgui_impl_opengl3.h",
+
+		--Files are taken from c:/dev/vendor
+        "%{vendor_dir}/imgui_docking/*.cpp",
+	    "%{vendor_dir}/imgui_docking/*.h",
+		"%{vendor_dir}/imgui_docking/backends/imgui_impl_glfw.cpp",
+		"%{vendor_dir}/imgui_docking/backends/imgui_impl_opengl3.cpp",
+		"%{vendor_dir}/imgui_docking/backends/imgui_impl_glfw.h",
+		"%{vendor_dir}/imgui_docking/backends/imgui_impl_opengl3.h",
+
 
 		vendor_dir .. "/stb_image/stb_image.cpp",
 		vendor_dir .. "/stb_image/stb_image.h",
@@ -67,8 +76,11 @@ project "gl_app"
 		--vendor_dir .. "/spdlog/include",
 		vendor_dir,
 
-		"%{vendor_dir}/imgui",
-       "%{vendor_dir}/imgui/backends",
+		--"%{vendor_dir}/imgui",
+        --"%{vendor_dir}/imgui/backends",
+
+		"%{vendor_dir}/imgui_docking",
+        "%{vendor_dir}/imgui_docking/backends",
 
 		"%{prj.location}/src", 
 		"%{prj.location}/src/framework", 

@@ -41,7 +41,9 @@ namespace lgl
                 number = std::to_string(heightNr++); // transfer unsigned int to string
 
             // now set the sampler to the correct texture unit
-            glUniform1i(glGetUniformLocation(shader.GetProgramID(), (name + number).c_str()), i);
+            const auto u_name = name + number;
+            //glUniform1i(glGetUniformLocation(shader.GetProgramID(), (name + number).c_str()), i);
+            shader.SetUniform1i(u_name, i);
             // and finally bind the texture
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }

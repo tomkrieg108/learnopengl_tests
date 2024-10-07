@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_glfw.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui_docking/imgui.h>
+#include <imgui_docking/backends/imgui_impl_glfw.h>
+#include <imgui_docking/backends/imgui_impl_opengl3.h>
 
 #include "base.h"
 #include "layer.h"
@@ -83,9 +83,9 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_TEXT_RENDERING);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_CPU);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_TESSELATION);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_CSM);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SCENE_GRAPH);
-	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_HEIGHT_MAP_TESSELATION);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_SKELETAL_ANIMATION);
 
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::SB7_POINT);
@@ -98,7 +98,7 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_ANIMATED_MODEL_BASIC);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_COMP_GEOM);
 	
-	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_DIR_SHADOW_VISUALISED2);
+	
 
 	/*---------------------------------------------------------------------
 	Everything following this uses m_camera2 instead of m_camera => uncomment next line if using
@@ -109,8 +109,8 @@ App::App()
 		m_coords = test_app_mgr.GetLayer(TestAppMgr::COORD_SYS_CAM2);
 	}
 	
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_DIR_SHADOW_VISUALISED);
-	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_CSM_VISUALISED);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_DIR_SHADOW_VISUALISED);
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_CSM_VISUALISED);
 
 		
 	EventManager::SetCallback(this, &App::OnMouseMove);
@@ -194,15 +194,13 @@ void App::Run()
 void App::ImGuiInit()
 {
 	ImGui::CreateContext();
-	ImGui_ImplGlfw_InitForOpenGL(m_window->GlfwWindow(), true);
-	const char* glsl_version = "#version 430";
-	ImGui_ImplOpenGL3_Init(glsl_version);
-
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO(); 
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+
+	//Slows the frame rate when IMGui window is outside main window.  More windows outside, slower the frame rate
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
@@ -211,6 +209,10 @@ void App::ImGuiInit()
 	//io.Fonts->AddFontFromFileTTF("asset/fonts/opensans/OpenSans-Bold.ttf", fontSize);
 	//io.FontDefault = io.Fonts->AddFontFromFileTTF("asset/fonts/opensans/OpenSans-Regular.ttf", fontSize);
 	//ImGui::StyleColorsDark();
+
+	ImGui_ImplGlfw_InitForOpenGL(m_window->GlfwWindow(), true);
+	const char* glsl_version = "#version 410";
+	ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
 void App::ImGuiUpdate()
@@ -271,8 +273,20 @@ void App::ImGuiRender()
 	if(m_layer)
 		m_layer->ImGuiUpdate();
 
+	//Need to do the following when ImGuiConfigFlags_ViewportsEnable is set:
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize = ImVec2((float)m_window->Width(), (float)m_window->Height()); //This has no effect?
+
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		glfwMakeContextCurrent(backup_current_context);
+	}
 }
 
 void App::ImGuiNewFrame()
@@ -285,86 +299,62 @@ void App::ImGuiNewFrame()
 void App::OnMouseMove(EventMouseMove& e)
 {
 	// don't pass mouse and keyboard presses further if an ImGui widget is active
-	auto& io = ImGui::GetIO();
-	if (io.WantCaptureMouse)
-	{
+	if (ImGui::GetIO().WantCaptureMouse)
 		return;
-	}
-
+	
 	bool* keys = m_window->GetKeys().m_key_code;
 	if (keys[GLFW_KEY_LEFT_ALT])
 		return;
 
 	const float sensitivity = 0.1f;
  	m_camera->Turn(e.delta_x * sensitivity, e.delta_y * sensitivity);
-	//std::cout << "Mouse move x y:" << e.delta_x << "," << e.delta_y << "\n";
 
-	auto* window = m_window->GlfwWindow();
-	auto state = glfwGetMouseButton(window, static_cast<int32_t>(GLFW_MOUSE_BUTTON_MIDDLE));
-	if (state == GLFW_PRESS)
-	{
-
-	}
-
-	if (keys[GLFW_KEY_LEFT_CONTROL])
-		m_camera2->RotateWorld(e.delta_x * 0.03f, e.delta_y * 0.03f);
-	else if(keys[GLFW_KEY_LEFT_SHIFT])
-		m_camera2->MoveForward((e.delta_x + e.delta_y) * 0.01f);
-	else
-		m_camera2->RotateLocal(e.delta_x * 0.001f, e.delta_y * 0.05f);
+	m_layer->OnEvent(e);
 }
 
 void App::OnMouseLDown(EventMouseLDown& e)
 {
-	std::cout << "Left Mouse Button Pressed\n";
+	m_layer->OnEvent(e);
 }
 void App::OnMouseLUp(EventMouseLUp& e)
 {
-	std::cout << "Left Mouse Button Released\n";
+	m_layer->OnEvent(e);
 }
 void App::OnMouseRDown(EventMouseRDown& e)
 {
-	std::cout << "Right Mouse Button Pressed\n";
+	m_layer->OnEvent(e);
 }
 void App::OnMouseRUp(EventMouseRUp& e)
 {
-	std::cout << "Right Mouse Button Released\n";
+	m_layer->OnEvent(e);
 }
 void App::OnMouseMDown(EventMouseMDown& e)
 {
-	std::cout << "Middle Mouse Button Pressed\n";
+	m_layer->OnEvent(e);
 }
 void App::OnMouseMUp(EventMouseMUp& e)
 {
-	std::cout << "Middle Mouse Button Released\n";
+	m_layer->OnEvent(e);
 }
 
 void App::OnMouseScroll(EventMouseScroll& e)
 {
 	m_camera->Zoom(e.y_offset);
-
-	m_camera2->Zoom(e.y_offset);
-	//std::cout << "Mouse scroll \n";
+	m_layer->OnEvent(e);
 }
 
 void App::OnKeyPressed(EventKeyPressed& e)
 {
-	auto& io = ImGui::GetIO();
-	if (io.WantCaptureKeyboard)
-	{
+	if (ImGui::GetIO().WantCaptureKeyboard)
 		return;
-	}
-	m_layer->OnKeyPressed(e);
+	m_layer->OnEvent(e);
 }
 
 void App::OnKeyReleased(EventKeyReleased& e)
 {
-	auto& io = ImGui::GetIO();
-	if (io.WantCaptureKeyboard)
-	{
+	if (ImGui::GetIO().WantCaptureKeyboard)
 		return;
-	}
-	std::cout << "Key code Released " << e.key << "\n";
+	m_layer->OnEvent(e);
 }
 
 
@@ -372,7 +362,8 @@ void App::OnWinResize(EventWinResize& e)
 {
 	m_camera->SetAspectRatio((float)e.buffer_width, (float)e.buffer_height);
 	m_camera2->SetAspectRatio((float)e.buffer_width, (float)e.buffer_height);
-	//std::cout << "Win Resize\n";
+
+	m_layer->OnEvent(e);
 }
 
 void App::CheckKeys(double delta_time)
@@ -381,34 +372,20 @@ void App::CheckKeys(double delta_time)
 	const float t = (float)(delta_time);
 	bool* keys = m_window->GetKeys().m_key_code;
 
-	//if (!m_imgui_layer->IsDisplayed())
-	//if (!m_input_disabled)
-	{
-		if (keys[GLFW_KEY_W])
-		{
-			m_camera->MoveForward(move_speed * t);
-			m_camera2->MoveForward(-move_speed * t);  //note the negative value needed to move forward
-		}
+	if (keys[GLFW_KEY_W])
+		m_camera->MoveForward(move_speed * t);
 
-		if (keys[GLFW_KEY_S])
-		{
-			m_camera->MoveForward(-move_speed * t);
-			m_camera2->MoveForward(move_speed * t); //note the positive value needed to move backward
-		}
+	if (keys[GLFW_KEY_S])
+		m_camera->MoveForward(-move_speed * t);
 
-		if (keys[GLFW_KEY_A])
-		{
-			m_camera->MoveRight(-move_speed * t);
-			m_camera2->MoveRight(-move_speed * t);
-		}
+	if (keys[GLFW_KEY_A])
+		m_camera->MoveRight(-move_speed * t);
 
-		if (keys[GLFW_KEY_D])
-		{
-			m_camera->MoveRight(move_speed * t);
-			m_camera2->MoveRight(move_speed * t);
-		}
+	if (keys[GLFW_KEY_D])
+		m_camera->MoveRight(move_speed * t);
+	
+	m_layer->CheckKeys(delta_time);
 
-	}
 	if (keys[GLFW_KEY_ESCAPE])
 		m_window->ShutDown();
 }

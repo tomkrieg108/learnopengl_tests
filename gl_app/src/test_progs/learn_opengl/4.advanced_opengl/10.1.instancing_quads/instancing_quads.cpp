@@ -1,9 +1,9 @@
 #include "pch.h"
 #include <GL\glew.h>
 
-//#include <imgui\imgui.h>
-//#include <imgui\imgui_impl_glfw.h>
-//#include <imgui\imgui_impl_opengl3.h>
+//#include <imgui_docking\imgui.h>
+//#include <imgui_docking\imgui_impl_glfw.h>
+//#include <imgui_docking\imgui_impl_opengl3.h>
 
 #include "camera.h"
 #include "stb_image/stb_image.h"

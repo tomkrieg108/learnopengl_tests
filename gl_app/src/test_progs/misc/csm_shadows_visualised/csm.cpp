@@ -5,9 +5,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-//#include <imgui\imgui.h>
-//#include <imgui\imgui_impl_glfw.h>
-//#include <imgui\imgui_impl_opengl3.h>
+#include <imgui_docking/imgui.h>
+#include <imgui_docking/backends/imgui_impl_glfw.h>
+#include <imgui_docking/backends/imgui_impl_opengl3.h>
 
 #include "camera.h"
 #include "window.h"
@@ -17,8 +17,6 @@
 #include "csm.h"
 
 namespace me {
-
-
 
   //vertex data
   static float s_plane_vertices[] = {
@@ -32,11 +30,28 @@ namespace me {
   };
 
 
-  CSMVisualised::CSMVisualised(Window& window, Camera& camera) :
+  CSMVisualised::CSMVisualised(Window& window, v2::Camera& camera) :
     m_window{ window }, m_camera{ camera },
     m_shadow_cascade_levels{ m_camera.ZFar() / 50.0f, m_camera.ZFar() / 25.0f, m_camera.ZFar() / 10.0f, m_camera.ZFar() / 2.0f }
   {
-    //auto a = m_shadow_cascade_levels;
+    float aspect_ratio = (float)m_window.BufferWidth() / (float)m_window.BufferHeight();
+
+    m_camera.SetPerspectiveParams({ aspect_ratio , 45.0f, 0.5f, 100.0f, true });
+    m_camera.SetPosition(glm::vec3(-5.0f, 10.0f, 10.0f));
+    m_camera.LookAt(glm::vec3{ 0,0,0 });
+
+    m_camera_vis = new v2::Camera();
+    m_camera_vis->SetProjectionType(v2::Camera::ProjectionType::Perspective);
+    m_camera_vis->SetPerspectiveParams({ aspect_ratio , 45.0f, 0.1f, 1000.0f, true });
+    m_camera_vis->SetPosition(glm::vec3(-20.0f, 15.0f, 20.0f));
+    m_camera_vis->LookAt(glm::vec3{ 0,0,0 });
+
+    m_camera_light = new v2::Camera();
+    m_camera_light->SetProjectionType(v2::Camera::ProjectionType::Ortho);
+    m_camera_light->SetOrthoParams({ -10.0f,10.0f,-10.0f,10.0f,1.0f,7.5f });
+    m_camera_light->SetPosition(m_light_pos);
+
+    m_controlled_camera = &m_camera;
   }
 
 
@@ -69,7 +84,6 @@ namespace me {
 
     for (const auto& model : modelMatrices)
     {
-      //shader.setMat4("model", model);
       shader->SetUniformMat4f("model", model);
       RenderCube();
     }
@@ -172,6 +186,76 @@ namespace me {
     glBindVertexArray(m_quadVAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
+  }
+
+  void CSMVisualised::RenderLamp(v2::Camera* camera)
+  {
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.2f));
+    glm::mat4 model = m_camera_light->GetTransform();
+    model = model * scale;
+
+    m_light_cube_shader->Bind();
+    m_light_cube_shader->SetUniformMat4f("model", model);
+    m_light_cube_shader->SetUniformMat4f("view", camera->GetViewMatrix());
+    m_light_cube_shader->SetUniformMat4f("projection", camera->GetProjMatrix());
+    RenderCube();
+    m_light_cube_shader->Unbind();
+    RenderCoords(camera, model);
+  }
+
+  void CSMVisualised::RenderCamera(v2::Camera* viewing_camera, v2::Camera* rendered_camera)
+  {
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.8f));
+    glm::mat4 model = rendered_camera->GetTransform();
+    model = model * scale;
+
+    m_light_cube_shader->Bind();
+    m_light_cube_shader->SetUniformMat4f("model", model);
+    m_light_cube_shader->SetUniformMat4f("view", viewing_camera->GetViewMatrix());
+    m_light_cube_shader->SetUniformMat4f("projection", viewing_camera->GetProjMatrix());
+    RenderCube();
+    m_light_cube_shader->Unbind();
+    RenderCoords(viewing_camera, model);
+  }
+
+  void  CSMVisualised::RenderCoords(v2::Camera* camera, glm::mat4& model)
+  {
+    if (m_coordsVAO == 0)
+    {
+      float y_offset = 0.0f;
+      float axis_length = 3.5f;
+      VertexCoords origin_x = { {0,y_offset,0},{1,0,0,1} };	//x=>red
+      VertexCoords origin_y = { {0,y_offset,0},{0,1,0,1} };	//y=>green
+      VertexCoords origin_z = { {0,y_offset,0},{0,0,1,1} };	//z=>blue
+      VertexCoords terminal_x = { {axis_length,y_offset,0},{1,0,0,1} };
+      VertexCoords terminal_y = { {0,axis_length,0},{0,1,0,1} };
+      VertexCoords terminal_z = { {0,y_offset,axis_length},{0,0,1,1} };
+      m_coord_verts.push_back(origin_x); m_coord_verts.push_back(terminal_x);
+      m_coord_verts.push_back(origin_y); m_coord_verts.push_back(terminal_y);
+      m_coord_verts.push_back(origin_z); m_coord_verts.push_back(terminal_z);
+      glGenVertexArrays(1, &m_coordsVAO);
+      glBindVertexArray(m_coordsVAO);
+
+      glGenBuffers(1, &m_coordsVBO);
+      glBindBuffer(GL_ARRAY_BUFFER, m_coordsVBO);
+      glBufferData(GL_ARRAY_BUFFER, m_coord_verts.size() * sizeof(VertexCoords), m_coord_verts.data(), GL_STATIC_DRAW);
+
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexCoords), (void*)offsetof(VertexCoords, pos));
+      glEnableVertexAttribArray(1);
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexCoords), (void*)offsetof(VertexCoords, col));
+    }
+
+    m_coords_shader->Bind();
+    m_coords_shader->SetUniformMat4f("u_model", model);
+    m_coords_shader->SetUniformMat4f("u_view", camera->GetViewMatrix());
+    m_coords_shader->SetUniformMat4f("u_proj", camera->GetProjMatrix());
+
+    glBindVertexArray(m_coordsVAO);
+    //glLineWidth(2.0f); //cannot do in openGL 3.2 + gives a INVALID_VALUE error
+    glDrawArrays(GL_LINES, 0, m_coord_verts.size());
+    //glLineWidth(1);
+    m_coords_shader->Unbind();
   }
 
   void CSMVisualised::DrawCascadeVolumeVisualizers(const std::vector<glm::mat4>& lightMatrices, Shader* shader)
@@ -307,6 +391,7 @@ namespace me {
   std::vector<glm::vec4> CSMVisualised::GetFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
   {
     //investigating !! ---------------------------------------------------
+    //See one of my notepads my book on how this works!
     glm::vec4 coord = glm::vec4{ 2,3,-10,1 };
     glm::vec4 coord_clip = proj * coord;
     glm::vec4 coord_ndc = coord_clip / coord_clip.w;
@@ -325,12 +410,11 @@ namespace me {
 
   glm::mat4 CSMVisualised::GetLightSpaceMatrix(const float nearPlane, const float farPlane)
   {
-    PerspectiveCamera& cam = dynamic_cast<PerspectiveCamera&>(m_camera);
     const auto proj = glm::perspective(
-      glm::radians(cam.FOV()), (float)m_window.BufferWidth() / (float)m_window.BufferHeight(), nearPlane,
+      glm::radians(m_camera.FOV()), (float)m_window.BufferWidth() / (float)m_window.BufferHeight(), nearPlane,
       farPlane);
 
-    const auto corners = GetFrustumCornersWorldSpace(proj, m_camera.ViewMatrix());
+    const auto corners = GetFrustumCornersWorldSpace(proj, m_camera.GetViewMatrix());
 
     glm::vec3 center = glm::vec3(0, 0, 0);
     for (const auto& v : corners)
@@ -340,6 +424,8 @@ namespace me {
     center /= corners.size();
 
     const auto lightView = glm::lookAt(center + m_light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
+    //+ve z dir of camera = -Front()
+    //const auto lightView = glm::lookAt(center + -m_camera_light->Front(), center, glm::vec3(0.0f, 1.0f, 0.0f));
 
     float minX = std::numeric_limits<float>::max();
     float maxX = std::numeric_limits<float>::lowest();
@@ -377,7 +463,7 @@ namespace me {
       maxZ *= zMult;
     }
 
-    const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+    glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
     return lightProjection * lightView;
   }
 
@@ -410,8 +496,8 @@ namespace me {
     glEnable(GL_DEPTH_TEST);
 
 
-    ShaderBuilder shader_builder1("src/test_progs/learn_opengl/8.guest/2021/csm/");
-    m_shader = shader_builder1.Vert("10.shadow_mapping.vs").Frag("10.shadow_mapping.fs").Build("css shader");
+    ShaderBuilder shader_builder("src/test_progs/learn_opengl/8.guest/2021/csm/");
+    m_shader = shader_builder.Vert("10.shadow_mapping.vs").Frag("10.shadow_mapping.fs").Build("css shader");
 
     ShaderBuilder shader_builder2("src/test_progs/learn_opengl/8.guest/2021/csm/");
     m_simple_depth_shader = shader_builder2.Vert("10.shadow_mapping_depth.vs").Frag("10.shadow_mapping_depth.fs").Geom("10.shadow_mapping_depth.gs").Build("Simple depth shader");
@@ -422,6 +508,16 @@ namespace me {
     ShaderBuilder shader_builder4("src/test_progs/learn_opengl/8.guest/2021/csm/");
     m_debug_cascade_shader = shader_builder4.Vert("10.debug_cascade.vs").Frag("10.debug_cascade.fs").Build("Debug cascad shader");
 
+    ShaderBuilder shader_builder_light("src/test_progs/learn_opengl/2.lighting/");
+    m_light_cube_shader = shader_builder_light.Vert("2.1.light_cube.vs").Frag("2.1.light_cube.fs").Build("light source shader");
+
+    ShaderBuilder shader_builder_coords("src/test_progs/misc/coords/");
+    m_coords_shader = shader_builder_coords.Vert("coords.vs").Frag("coords.fs").Build("Local Coord shader");
+
+    ShaderBuilder shader_builder_frustum("src/test_progs/learn_opengl/8.guest/2021/csm/");
+    m_frustum_shader = shader_builder_frustum.Vert("10.debug_cascade.vs").Frag("10.debug_cascade.fs").Build("Frustum shader");
+
+    
     //plane VAO
     glGenVertexArrays(1, &m_planeVAO);
     glGenBuffers(1, &m_planeVBO);
@@ -472,9 +568,27 @@ namespace me {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // configure UBO
-      // --------------------
+    //Setup the framebuffer for visualiser camera
+    glGenFramebuffers(1, &m_camera_vis_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_camera_vis_fbo);
+    glGenTextures(1, &m_camera_vis_texture);
+    glBindTexture(GL_TEXTURE_2D, m_camera_vis_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_window.BufferWidth(), m_window.BufferHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_camera_vis_texture, 0);
+    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    uint32_t rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_window.BufferWidth(), m_window.BufferHeight());
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+      std::cout << "ERROR::FRAMEBUFFER:: m_camera_vis_texture is not complete!\n";
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // configure UBO
+    // --------------------
     glGenBuffers(1, &m_matricesUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_STATIC_DRAW);
@@ -492,19 +606,19 @@ namespace me {
 
   void CSMVisualised::OnUpdate(double now, double time_step)
   {
+    m_camera_light->SetPosition(m_light_pos);
+    m_camera_light->LookAt(glm::vec3{ 0, 0, 0 });
+
     // 0. UBO setup
     const auto lightMatrices = GetLightSpaceMatrices();
     glBindBuffer(GL_UNIFORM_BUFFER, m_matricesUBO);
     for (size_t i = 0; i < lightMatrices.size(); ++i)
-    {
       glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightMatrices[i]);
-    }
+    
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     // 1. render depth of scene to texture (from light's perspective)
-         // --------------------------------------------------------------
-         //lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
-         // render scene from light's point of view
+    // --------------------------------------------------------------
     m_simple_depth_shader->Bind();
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_lightFBO);
@@ -515,26 +629,21 @@ namespace me {
     glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // reset viewport
+    // 2. render scene as normal using the generated depth/shadow map  
+    // --------------------------------------------------------------
     glViewport(0, 0, m_window.BufferWidth(), m_window.BufferHeight());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // 2. render scene as normal using the generated depth/shadow map  
-          // --------------------------------------------------------------
-    //glViewport(0, 0, fb_width, fb_height);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shader->Bind();
 
-    /*PerspectiveCamera& cam = dynamic_cast<PerspectiveCamera&>(m_camera);
-    const glm::mat4 projection1 = glm::perspective(glm::radians(cam.FOV()), (float)m_window.BufferWidth() / (float)m_window.BufferHeight(), cam.ZNear(), cam.ZFar());*/
-    const glm::mat4 projection = m_camera.ProjMatrix();
+    const glm::mat4 projection = m_camera.GetProjMatrix();
 
-    const glm::mat4 view = m_camera.ViewMatrix();
+    const glm::mat4 view = m_camera.GetViewMatrix();
     m_shader->SetUniformMat4f("projection", projection);
     m_shader->SetUniformMat4f("view", view);
     // set light uniforms
-    m_shader->SetUniform3f("viewPos", m_camera.Position());
+    m_shader->SetUniform3f("viewPos", m_camera.GetPosition());
     m_shader->SetUniform3f("lightDir", m_light_dir);
+    //m_shader->SetUniform3f("lightDir", -m_camera_light->Front());
     m_shader->SetUniform1f("farPlane", m_camera.ZFar());
     m_shader->SetUniform1i("cascadeCount", m_shadow_cascade_levels.size());
     for (size_t i = 0; i < m_shadow_cascade_levels.size(); ++i)
@@ -546,55 +655,173 @@ namespace me {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_light_depth_maps);
     RenderScene(m_shader.get());
+    RenderLamp(&m_camera);
 
-    if (m_light_matrices_cache.size() != 0)
-    {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      m_debug_cascade_shader->Bind();
-      m_debug_cascade_shader->SetUniformMat4f("projection", projection);
-      m_debug_cascade_shader->SetUniformMat4f("view", view);
-      DrawCascadeVolumeVisualizers(m_light_matrices_cache, m_debug_cascade_shader.get());
-      glDisable(GL_BLEND);
-    }
-
-    // render Depth map to quad for visual debugging
-    // ---------------------------------------------
-    m_debug_Depth_quad->Bind();
-    m_debug_Depth_quad->SetUniform1i("layer", m_debug_layer);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, m_light_depth_maps);
-    if (m_show_quad)
-    {
-      //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      RenderQuad();
-    }
+    // Render from point pf view of m_camera_vis
+    glBindFramebuffer(GL_FRAMEBUFFER, m_camera_vis_fbo);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_shader->Bind(); //need to bind shader again because renderLamp binds a different shader
+    m_shader->SetUniformMat4f("projection", m_camera_vis->GetProjMatrix());
+    m_shader->SetUniformMat4f("view", m_camera_vis->GetViewMatrix());
+    m_shader->SetUniform3f("viewPos", m_camera_vis->GetPosition());
+    RenderScene(m_shader.get());
+    RenderLamp(m_camera_vis);
+    RenderCamera(m_camera_vis, &m_camera);
+    //RenderFrustum(m_camera_vis, &m_camera, glm::vec4{ 0.0f, 0.0f, 1.0f, 0.15f });
+    //RenderFrustum(m_camera_vis, m_camera_light, glm::vec4{ 1.0f, 0.0f, 0.0f, 0.15f });
+    RenderAllFrustrums(m_camera_vis, m_camera_light);
+    RenderAllFrustrums(m_camera_vis, &m_camera);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
-  void CSMVisualised::OnKeyPressed(EventKeyPressed& e)
+  void CSMVisualised::RenderFrustum(v2::Camera* viewing_camera, /*v2::Camera* rendered_camera,*/ const glm::mat4& projview,
+   /* const float nearPlane, const float farPlane,*/ glm::vec4 color)
   {
-    std::cout << "Key code pressed - CSM " << e.key << "\n";
 
-    if (e.key == GLFW_KEY_F)
-      m_show_quad = !m_show_quad;
+    /*v2::Camera camera = *rendered_camera;
+    camera.SetZNearFar(nearPlane, farPlane);
+    
+    std::vector<glm::vec4> frustum_corners_ws = GetFrustumCornersWorldSpace(camera.GetProjMatrix(), camera.GetViewMatrix());*/
 
-    if ((e.key == GLFW_KEY_N) && m_show_quad)
+    std::vector<glm::vec4> frustum_corners_ws = GetFrustumCornersWorldSpace(projview);
+
+    std::vector<glm::vec3> corners_vec3;
+    for (const auto& v : frustum_corners_ws)
+      corners_vec3.push_back(glm::vec3(v));
+
+    //if (frustumVAO == 0)
+    //{
+    uint32_t indices[] =
     {
-      m_debug_layer++;
-      if (m_debug_layer > m_shadow_cascade_levels.size())
-        m_debug_layer = 0;
-    }
+      //front
+      0,6,2,
+      0,4,6,
 
-    if (e.key == GLFW_KEY_C)
-    {
-      m_show_visualizers = !m_show_visualizers;
-      if (m_show_visualizers)
-        m_light_matrices_cache = GetLightSpaceMatrices();
-      else
-        m_light_matrices_cache.clear();
-    }
+      //back
+      1,7,5,
+      1,3,7,
 
+      //left
+      1,0,2,
+      1,2,3,
+
+      //right
+      5,6,4,
+      5,7,6,
+
+      //top
+      2,6,7,
+      2,7,3,
+
+      //bottom
+      0,1,5,
+      0,5,4
+    };
+
+    glGenVertexArrays(1, &frustumVAO);
+    glBindVertexArray(frustumVAO);
+
+    glGenBuffers(1, &frustumEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, frustumEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+
+
+    //}
+
+    //glBindVertexArray(frustumVAO);
+    glGenBuffers(1, &frustumVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, frustumVBO);
+    auto bytes = corners_vec3.size() * sizeof(glm::vec3);
+    glBufferData(GL_ARRAY_BUFFER, bytes, corners_vec3.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+    //glm::vec4 col = glm::vec4{ 0.0f, 1.0f, 1.0f, 0.35f };
+    m_frustum_shader->Bind();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    m_frustum_shader->SetUniform4f("color", color);
+    m_frustum_shader->SetUniformMat4f("view", viewing_camera->GetViewMatrix());
+    m_frustum_shader->SetUniformMat4f("projection", viewing_camera->GetProjMatrix());
+    glDrawElements(GL_TRIANGLES, GLsizei(36), GL_UNSIGNED_INT, 0);
+    glDisable(GL_BLEND);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_TRIANGLES, GLsizei(36), GL_UNSIGNED_INT, 0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    m_frustum_shader->Unbind();
+
+    glBindVertexArray(0);
+    glDeleteBuffers(1, &frustumVBO);
+    glDeleteBuffers(1, &frustumEBO);
+    glDeleteVertexArrays(1, &frustumVAO);
   }
+
+  void CSMVisualised::RenderAllFrustrums(v2::Camera* viewing_camera, v2::Camera* rendered_camera)
+  {
+    const glm::vec4 colors[] = {
+        {1.0, 1.0, 0.0, 0.15f},
+        {0.0, 1.0, 0.0, 0.15f},
+        {0.0, 0.0, 1.0, 0.15f},
+    };
+
+    const glm::vec4 colors_light[] = {
+        {1.0, 0.0, 0.0, 0.15f},
+        {1.0, 0.4, 0.0, 0.15f},
+        {1.0, 0.0, 0.4, 0.15f},
+    };
+
+    if (rendered_camera == m_camera_light)
+    {
+      for (size_t i = 0; i < m_shadow_cascade_levels.size() + 1; ++i)
+      {
+        if (i == 0)
+        {
+          glm::mat4 light_space_matrix = GetLightSpaceMatrix(m_camera.ZNear(), m_shadow_cascade_levels[i]);
+          RenderFrustum(viewing_camera, light_space_matrix,  colors_light[i % 3]);
+        }
+        else if (i < m_shadow_cascade_levels.size())
+        {
+          glm::mat4 light_space_matrix = GetLightSpaceMatrix(m_shadow_cascade_levels[i - 1], m_shadow_cascade_levels[i]);
+
+          RenderFrustum(viewing_camera, light_space_matrix, colors_light[i % 3]);
+        }
+        else
+        {
+          glm::mat4 light_space_matrix = GetLightSpaceMatrix(m_shadow_cascade_levels[i - 1], m_camera.ZFar());
+          RenderFrustum(viewing_camera, light_space_matrix, colors_light[i % 3]);
+        }
+      }
+    }
+
+    v2::Camera camera = *rendered_camera;
+    for (size_t i = 0; i < m_shadow_cascade_levels.size() + 1; ++i)
+    {
+      if (i == 0)
+      {
+        camera.SetZNearFar(rendered_camera->ZNear(), m_shadow_cascade_levels[i]);
+        glm::mat4 proj_view_matrix = camera.GetProjMatrix() * camera.GetViewMatrix();
+
+        RenderFrustum(viewing_camera, proj_view_matrix, colors[i%3]);
+      }
+      else if (i < m_shadow_cascade_levels.size())
+      {
+        camera.SetZNearFar(m_shadow_cascade_levels[i - 1], m_shadow_cascade_levels[i]);
+        glm::mat4 proj_view_matrix = camera.GetProjMatrix() * camera.GetViewMatrix();
+        RenderFrustum(viewing_camera, proj_view_matrix, colors[i % 3]);
+      }
+      else
+      {
+        camera.SetZNearFar(m_shadow_cascade_levels[i - 1], rendered_camera->ZFar());
+        glm::mat4 proj_view_matrix = camera.GetProjMatrix() * camera.GetViewMatrix();
+        RenderFrustum(viewing_camera, proj_view_matrix, colors[i % 3]);
+      }
+    }
+  }
+
 
   void CSMVisualised::Shutdown()
   {
@@ -608,6 +835,96 @@ namespace me {
 
   void CSMVisualised::ImGuiUpdate()
   {
+    float aspect_ratio = (float)m_window.BufferWidth() / (float)m_window.BufferHeight();
+    float tex_height = 600.0f;
+    float tex_width = tex_height * aspect_ratio;
+
+    ImGui::Begin("Parameters");
+
+    if (ImGui::CollapsingHeader("Directional Light"))
+    {
+      ImGui::SliderFloat3("Pos ", &(m_light_pos[0]), -50.0f, 50.0f);
+      auto& light_ortho_params = m_camera_light->GetOrthoParameters();
+      ImGui::SliderFloat("Near ", &light_ortho_params.z_near, 0.2f, 2.0f);  //ImGui::SameLine();
+      ImGui::SliderFloat("Far ", &light_ortho_params.z_far, 3.0f, 25.0f);
+
+      ImGui::SliderFloat("L ", &light_ortho_params.left, -25.0f, 0.0f); //ImGui::SameLine();
+      ImGui::SliderFloat("R ", &light_ortho_params.right, 0.0f, 25.0f); //ImGui::SameLine();
+      ImGui::SliderFloat("B ", &light_ortho_params.bottom, -25.0f, 0.0f); //ImGui::SameLine();
+      ImGui::SliderFloat("T ", &light_ortho_params.top, 0.0f, 25.0f);
+    }
+
+    if (ImGui::CollapsingHeader("Depth Buffer"))
+    {
+      //ImTextureID tex_id = (void*)depthMap;
+      //don't flip UV's
+     // ImGui::Image(tex_id, ImVec2(tex_width, tex_height));
+    }
+
+    if (ImGui::CollapsingHeader("Camera 2"))
+    {
+      ImTextureID tex_id = (void*)m_camera_vis_texture;
+      //flip uv's in this case WTF?
+      ImGui::Image(tex_id, ImVec2(tex_width, tex_height), ImVec2{ 0,1 }, ImVec2{ 1,0 });
+    }
+
+    ImGui::End();
   }
 
+  void CSMVisualised::CheckKeys(double delta_time)
+  {
+    const float move_speed = 5.0f;
+    const float t = (float)(delta_time);
+    bool* keys = m_window.GetKeys().m_key_code;
+
+    if (keys[GLFW_KEY_W])
+      m_controlled_camera->MoveForward(-move_speed * t); //note the negative value needed to move forward
+
+    if (keys[GLFW_KEY_S])
+      m_controlled_camera->MoveForward(move_speed * t); //note the positive value needed to move backward
+
+    if (keys[GLFW_KEY_A])
+      m_controlled_camera->MoveRight(-move_speed * t);
+
+    if (keys[GLFW_KEY_D])
+      m_controlled_camera->MoveRight(move_speed * t);
+  }
+
+  void CSMVisualised::OnEvent(Event& event)
+  {
+    if (event.Type() == Event::kMouseMove)
+    {
+      EventMouseMove& e = dynamic_cast<EventMouseMove&>(event);
+      auto* window = m_window.GlfwWindow();
+      bool* keys = m_window.GetKeys().m_key_code;
+      auto state = glfwGetMouseButton(window, static_cast<int32_t>(GLFW_MOUSE_BUTTON_MIDDLE));
+      if (state == GLFW_PRESS)
+      {
+      }
+      if (keys[GLFW_KEY_LEFT_CONTROL])
+        m_controlled_camera->RotateWorld(e.delta_x * 0.03f, e.delta_y * 0.03f);
+      else if (keys[GLFW_KEY_LEFT_SHIFT])
+        m_controlled_camera->MoveForward((e.delta_x + e.delta_y) * 0.01f);
+      else
+        m_controlled_camera->RotateLocal(e.delta_x * 0.001f, e.delta_y * 0.05f);
+    }
+
+    if (event.Type() == Event::kMouseScroll)
+    {
+      EventMouseScroll& e = dynamic_cast<EventMouseScroll&>(event);
+      m_controlled_camera->Zoom(e.y_offset);
+    }
+
+    if (event.Type() == Event::kKeyPressed)
+    {
+      EventKeyPressed& e = dynamic_cast<EventKeyPressed&>(event);
+      if (e.key == GLFW_KEY_T)
+      {
+        if (m_controlled_camera == &m_camera)
+          m_controlled_camera = m_camera_vis;
+        else
+          m_controlled_camera = &m_camera;
+      }
+    }
+  }
 }

@@ -27,7 +27,4 @@ private:
 	
 	Camera& m_camera;
 	Window& m_window;
-
-	
-	void OnKeyPressed(EventKeyPressed& e) override;
 };

@@ -100,7 +100,7 @@
 
 }
 
-
+ //TODO - make a transform class using quaternians, apply to camera
  namespace v2
  {
 	 class Camera
@@ -156,6 +156,47 @@
 
 		 glm::vec3 GetPosition();
 		 glm::mat4& GetTransform() { return m_transform; }
+
+		 float ZNear() 
+		 { 
+			 return m_projection_type == ProjectionType::Perspective ?
+				 m_perspective_params.z_near : m_ortho_params.z_near;
+		 }
+		 float ZFar() 
+		 { 
+			 return m_projection_type == ProjectionType::Perspective ?
+				 m_perspective_params.z_far : m_ortho_params.z_far;
+		 }
+
+		 float FOV()
+		 {
+			 return m_projection_type == ProjectionType::Perspective ?
+				 m_perspective_params.fov : 0;
+		 }
+
+		 glm::vec3& Front();
+
+		 void SetZNear(float znear)
+		 {
+			 if (m_projection_type == ProjectionType::Perspective)
+				 m_perspective_params.z_near = znear;
+			 else
+				 m_ortho_params.z_near = znear;
+		 }
+
+		 void SetZFar(float zfar)
+		 {
+			 if (m_projection_type == ProjectionType::Perspective)
+				 m_perspective_params.z_far = zfar;
+			 else
+				 m_ortho_params.z_far = zfar;
+		 }
+
+		 void SetZNearFar(float znear, float zfar)
+		 {
+			 SetZNear(znear);
+			 SetZFar(zfar);
+		 }
 
 		 // Controller
 		 void SetPosition(glm::vec3& position);

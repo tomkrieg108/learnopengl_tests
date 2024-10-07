@@ -5,7 +5,6 @@
 #include "test_app.h"
 
 class Window;
-//class PerspectiveCamera;
 class Layer;
 
 class App

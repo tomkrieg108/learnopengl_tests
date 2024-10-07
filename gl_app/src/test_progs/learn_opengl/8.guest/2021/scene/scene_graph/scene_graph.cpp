@@ -5,9 +5,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-//#include <imgui\imgui.h>
-//#include <imgui\imgui_impl_glfw.h>
-//#include <imgui\imgui_impl_opengl3.h>
+//#include <imgui_docking\imgui.h>
+//#include <imgui_docking\imgui_impl_glfw.h>
+//#include <imgui_docking\imgui_impl_opengl3.h>
 
 #include "camera.h"
 #include "window.h"
@@ -71,8 +71,14 @@ void SceneGraph::OnUpdate(double now, double time_step)
 {
 	// draw our scene graph
 	Entity* lastEntity = m_entity;
+	
+	m_shader->Bind();
+	m_shader->SetUniformMat4f("projection", m_camera.ProjMatrix());
+	m_shader->SetUniformMat4f("view", m_camera.ViewMatrix());
+	
 	while (lastEntity->children.size())
 	{
+		const auto& transform = lastEntity->transform.getModelMatrix();
 		m_shader->SetUniformMat4f("model", lastEntity->transform.getModelMatrix());
 		lastEntity->pModel->Draw(*m_shader);
 		lastEntity = lastEntity->children.back().get();
@@ -86,7 +92,3 @@ void SceneGraph::ImGuiUpdate()
 {
 }
 
-
-void SceneGraph::OnKeyPressed(EventKeyPressed& e)
-{
-}

@@ -5,9 +5,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-//#include <imgui\imgui.h>
-//#include <imgui\imgui_impl_glfw.h>
-//#include <imgui\imgui_impl_opengl3.h>
+//#include <imgui_docking\imgui.h>
+//#include <imgui_docking\imgui_impl_glfw.h>
+//#include <imgui_docking\imgui_impl_opengl3.h>
 
 #include "camera.h"
 #include "window.h"
@@ -564,11 +564,12 @@ void CSM::OnUpdate(double now, double time_step)
   glBindTexture(GL_TEXTURE_2D_ARRAY, m_light_depth_maps);
   if (m_show_quad)
   {
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     RenderQuad();
   }
 }
 
+#if 0
 void CSM::OnKeyPressed(EventKeyPressed& e)
 {
   std::cout << "Key code pressed - CSM " << e.key << "\n";
@@ -591,7 +592,17 @@ void CSM::OnKeyPressed(EventKeyPressed& e)
     else
       m_light_matrices_cache.clear();
   }
+}
+#endif
 
+void CSM::OnEvent(Event& event)
+{
+  if (event.Type() != Event::kKeyPressed)
+    return;
+
+  EventKeyPressed& e = dynamic_cast<EventKeyPressed&>(event);
+  if (e.key == GLFW_KEY_F)
+    m_show_quad = !m_show_quad;
 }
 
 void CSM::Shutdown()

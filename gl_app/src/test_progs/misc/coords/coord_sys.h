@@ -30,3 +30,10 @@ private:
 
 	std::vector<Vertex> m_verticies;
 };
+
+class WorldCoords
+{
+public:
+
+private:
+};

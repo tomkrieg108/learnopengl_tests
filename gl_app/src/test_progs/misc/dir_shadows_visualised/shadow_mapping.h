@@ -18,11 +18,13 @@ namespace me
 		void Shutdown() override;
 		void OnUpdate(double now, double time_step) override;
 		void ImGuiUpdate() override;
+		void CheckKeys(double delta_time) override;
+		void OnEvent(Event& event) override;
 
 	private:
 		std::unique_ptr<Shader> m_shader = nullptr;
 		std::unique_ptr<Shader> simpleDepthShader = nullptr;
-		std::unique_ptr<Shader> debugDepthQuad = nullptr;
+		std::unique_ptr<Shader> debugDepthQuad = nullptr; //not used - displayed in ImGui
 		std::unique_ptr<Shader> m_light_cube_shader = nullptr;
 		std::unique_ptr<Shader> m_coords_shader = nullptr;
 		std::unique_ptr<Shader> m_frustum_shader = nullptr;
@@ -30,6 +32,7 @@ namespace me
 		v2::Camera& m_camera; //normal viewing
 		v2::Camera* m_camera_vis = nullptr; //for visualisation 
 		v2::Camera* m_camera_light = nullptr; //camera aligned with the directional light
+		v2::Camera* m_controlled_camera = nullptr;
 		
 		Window& m_window;
 

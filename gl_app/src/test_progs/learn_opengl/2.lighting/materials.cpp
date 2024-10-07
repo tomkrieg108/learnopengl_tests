@@ -2,9 +2,9 @@
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_glfw.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui_docking/imgui.h>
+#include <imgui_docking/backends/imgui_impl_glfw.h>
+#include <imgui_docking/backends/imgui_impl_opengl3.h>
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "stb_image/stb_image.h"

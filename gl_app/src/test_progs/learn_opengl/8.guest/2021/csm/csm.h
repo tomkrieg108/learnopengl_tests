@@ -13,9 +13,10 @@ public:
 	CSM(Window& window, Camera& camera);
 	void Startup() override;
 	void Shutdown() override;
-	void OnUpdate(double now, double time_step) override;
 	void ImGuiUpdate() override;
-
+	void OnUpdate(double now, double time_step) override;
+	void OnEvent(Event& event) override;
+	
 private:
 	std::unique_ptr<Shader> m_shader = nullptr;
 	std::unique_ptr<Shader> m_simple_depth_shader = nullptr;
@@ -71,6 +72,4 @@ private:
 	std::vector<glm::vec4> GetFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view);
 
 	void DrawCascadeVolumeVisualizers(const std::vector<glm::mat4>& lightMatrices, Shader* shader);
-
-	void OnKeyPressed(EventKeyPressed& e) override;
 };

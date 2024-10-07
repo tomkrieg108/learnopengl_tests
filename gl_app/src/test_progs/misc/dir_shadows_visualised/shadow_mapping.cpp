@@ -5,16 +5,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_glfw.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui_docking/imgui.h>
+#include <imgui_docking/backends/imgui_impl_glfw.h>
+#include <imgui_docking/backends/imgui_impl_opengl3.h>
 
 #include "camera.h"
 #include "window.h"
 #include "stb_image/stb_image.h"
 #include "shader.h"
-
 #include "shadow_mapping.h"
+
 namespace me {
 
 
@@ -76,13 +76,13 @@ namespace me {
   {
     float aspect_ratio = (float)m_window.BufferWidth() / (float)m_window.BufferHeight();
 
-    m_camera.SetPerspectiveParams({ aspect_ratio , 45.0f, 2.0f, 50.0f, true });
+    m_camera.SetPerspectiveParams({ aspect_ratio , 45.0f, 1.0f, 50.0f, true });
     m_camera.SetPosition(glm::vec3(-5.0f, 10.0f, 10.0f));
     m_camera.LookAt(glm::vec3{ 0,0,0 });
 
     m_camera_vis = new v2::Camera();
     m_camera_vis->SetProjectionType(v2::Camera::ProjectionType::Perspective);
-    m_camera_vis->SetAspectRatio((float)m_window.BufferWidth(), (float)m_window.BufferHeight());
+    m_camera_vis->SetPerspectiveParams({ aspect_ratio , 45.0f, 0.1f, 1000.0f, true });
     m_camera_vis->SetPosition(glm::vec3(-20.0f, 15.0f, 20.0f));
     m_camera_vis->LookAt(glm::vec3{ 0,0,0 });
 
@@ -90,6 +90,8 @@ namespace me {
     m_camera_light->SetProjectionType(v2::Camera::ProjectionType::Ortho);
     m_camera_light->SetOrthoParams({-10.0f,10.0f,-10.0f,10.0f,1.0f,7.5f });
     m_camera_light->SetPosition(lightPos);
+
+    m_controlled_camera = &m_camera;
   }
 
   void ShadowMappingVisualised::Startup()
@@ -202,7 +204,7 @@ namespace me {
     m_camera_light->LookAt(glm::vec3{ 0, 0, 0 });
     glm::mat4 lightSpaceMatrix = m_camera_light->GetProjMatrix() * m_camera_light->GetViewMatrix();
     
-    // render scene from light's point of view
+    // render scene from light's point of view (generate depth/shadow map)
     simpleDepthShader->Bind();
     simpleDepthShader->SetUniformMat4f("lightSpaceMatrix", lightSpaceMatrix);
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
@@ -231,12 +233,13 @@ namespace me {
    // glCullFace(GL_BACK);
     renderLamp(&m_camera);
 
-    // Render from point pf view of m_camera_vis
+    // Render from point of view of m_camera_vis
     glBindFramebuffer(GL_FRAMEBUFFER, m_camera_vis_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shader->Bind(); //need to bind shader again because renderLamp binds a different shader
     m_shader->SetUniformMat4f("projection", m_camera_vis->GetProjMatrix());
     m_shader->SetUniformMat4f("view", m_camera_vis->GetViewMatrix());
+    m_shader->SetUniform3f("viewPos", m_camera_vis->GetPosition());
     renderScene(*m_shader);
     renderLamp(m_camera_vis);
     renderCamera(m_camera_vis, &m_camera);
@@ -369,12 +372,10 @@ namespace me {
    
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     m_frustum_shader->SetUniform4f("color", color);
     m_frustum_shader->SetUniformMat4f("view", viewing_camera->GetViewMatrix());
     m_frustum_shader->SetUniformMat4f("projection", viewing_camera->GetProjMatrix());
     glDrawElements(GL_TRIANGLES, GLsizei(36), GL_UNSIGNED_INT, 0);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDisable(GL_BLEND);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -588,6 +589,63 @@ namespace me {
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
+  }
+
+  void ShadowMappingVisualised::CheckKeys(double delta_time)
+  {
+    const float move_speed = 5.0f;
+    const float t = (float)(delta_time);
+    bool* keys = m_window.GetKeys().m_key_code;
+
+    if (keys[GLFW_KEY_W])
+      m_controlled_camera->MoveForward(-move_speed * t); //note the negative value needed to move forward
+
+    if (keys[GLFW_KEY_S])
+      m_controlled_camera->MoveForward(move_speed * t); //note the positive value needed to move backward
+  
+    if (keys[GLFW_KEY_A])
+      m_controlled_camera->MoveRight(-move_speed * t);
+     
+    if (keys[GLFW_KEY_D])
+      m_controlled_camera->MoveRight(move_speed * t);
+  }
+
+  void ShadowMappingVisualised::OnEvent(Event& event)
+  {
+    if (event.Type() == Event::kMouseMove)
+    {
+      EventMouseMove& e = dynamic_cast<EventMouseMove&>(event);
+      auto* window = m_window.GlfwWindow();
+      bool* keys = m_window.GetKeys().m_key_code;
+      auto state = glfwGetMouseButton(window, static_cast<int32_t>(GLFW_MOUSE_BUTTON_MIDDLE));
+      if (state == GLFW_PRESS)
+      {
+      }
+      if (keys[GLFW_KEY_LEFT_CONTROL])
+        m_controlled_camera->RotateWorld(e.delta_x * 0.03f, e.delta_y * 0.03f);
+      else if(keys[GLFW_KEY_LEFT_SHIFT])
+        m_controlled_camera->MoveForward((e.delta_x + e.delta_y) * 0.01f);
+      else
+        m_controlled_camera->RotateLocal(e.delta_x * 0.001f, e.delta_y * 0.05f);
+     }
+
+    if (event.Type() == Event::kMouseScroll)
+    {
+      EventMouseScroll& e = dynamic_cast<EventMouseScroll&>(event);
+      m_controlled_camera->Zoom(e.y_offset);
+    }
+
+    if (event.Type() == Event::kKeyPressed)
+    {
+      EventKeyPressed& e = dynamic_cast<EventKeyPressed&>(event);
+      if (e.key == GLFW_KEY_T)
+      {
+        if (m_controlled_camera == &m_camera)
+          m_controlled_camera = m_camera_vis;
+        else
+          m_controlled_camera = &m_camera;
+      }
+    }
   }
 
 }

@@ -76,6 +76,7 @@ public:
 		LGL_SKELETAL_ANIMATION,
 		LGL_CSM,
 		LGL_SCENE_GRAPH,
+		LGL_SCENE_GRAPH_QUATERNIAN, //TODO - make a transform class using quaternians
 		LGL_HEIGHT_MAP_CPU,
 		LGL_HEIGHT_MAP_TESSELATION,
 		
