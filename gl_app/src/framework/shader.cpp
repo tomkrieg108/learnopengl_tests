@@ -7,6 +7,11 @@ ShaderBuilder::ShaderBuilder(std::string const& shader_directory = "assets/shade
 {
 }
 
+void ShaderBuilder::SetShaderDirectory(std::string const& shader_directory)
+{
+	m_shader_directory = shader_directory;
+}
+
 ShaderBuilder& ShaderBuilder::Vert(const std::string& filename)
 {
 	auto filepath = m_shader_directory + filename;
@@ -195,6 +200,12 @@ void Shader::SetUniform3f(const std::string& name, float v0, float v1, float v2)
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
 	glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
+}
+
+void Shader::SetUniformMat3f(const std::string& name, const glm::mat3& matrix)
+{
+	//todo - use glm::value_ptr instead of &matrix[0][0]
+	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
 }
 
 void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& matrix)

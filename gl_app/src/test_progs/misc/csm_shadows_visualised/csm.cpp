@@ -782,6 +782,7 @@ namespace me {
         {
           glm::mat4 light_space_matrix = GetLightSpaceMatrix(m_camera.ZNear(), m_shadow_cascade_levels[i]);
           RenderFrustum(viewing_camera, light_space_matrix,  colors_light[i % 3]);
+          return;
         }
         else if (i < m_shadow_cascade_levels.size())
         {
@@ -795,6 +796,7 @@ namespace me {
           RenderFrustum(viewing_camera, light_space_matrix, colors_light[i % 3]);
         }
       }
+      //return;
     }
 
     v2::Camera camera = *rendered_camera;

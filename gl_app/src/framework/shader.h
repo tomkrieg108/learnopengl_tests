@@ -10,6 +10,7 @@ class ShaderBuilder
 public:
 
 	ShaderBuilder(std::string const& shader_directory);
+	void SetShaderDirectory(std::string const& shader_directory);
 	ShaderBuilder& Vert(const std::string& filename);
 	ShaderBuilder& TessCtrl(const std::string& filename);
 	ShaderBuilder& TessEval(const std::string& filename);
@@ -59,6 +60,7 @@ public:
 	void SetUniform3f(const std::string& name, glm::vec3& data);
 	void SetUniform4f(const std::string& name, glm::vec4& data);
 	void SetUniform1i(const std::string& name, int v0);
+	void SetUniformMat3f(const std::string& name, const glm::mat3& matrix);
 	void SetUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
 	uint32_t GetProgramID() { return m_program_id; }

@@ -57,6 +57,10 @@
 #include "5.advanced_lighting/7.bloom/bloom.h"
 #include "5.advanced_lighting/8.1.deferred_shading/deferred_shading.h"
 #include "5.advanced_lighting/9.1.ssao/ssao.h"
+#include "6.pbr/1.pbr_basic/pbr_basic.h"
+#include "6.pbr/2.pbr_textured/pbr_textured.h"
+#include "6.pbr/3.1.ibl_diffuse_irradiance/ibl_diffuse_irradiance_1.h"
+#include "6.pbr/3.2.ibl_diffuse_irradiance/ibl_diffuse_irradiance_2.h"
 #include "7.in_practice/2.text_rendering/text_rendering.h"
 #include "8.guest/2020/skeletal_animation/skeletal_animation.h"
 #include "8.guest/2021/csm/csm.h"
@@ -137,7 +141,7 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case LGL_BLOOM: return new Bloom(m_window, m_camera); break;
 		case LGL_DEFERRED_SHADING: return new DeferredShading(m_window, m_camera); break;
 		case LGL_SCREEN_SPACE_AMBIENT_OCCLUSION: return new SSAO(m_window, m_camera); break;
-
+	
 		case LGL_TEXT_RENDERING: return new TextRendering(m_window, m_camera); break;
 
 		case LGL_SKELETAL_ANIMATION: return new SkeletalAnimation(m_window, m_camera); break;
@@ -156,8 +160,13 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case MISC_ANIMATED_MODEL_BASIC: return new me::BasicModelTest(m_window, m_camera); break;
 		case MISC_COMP_GEOM: return new jmk::CompGeom(m_window, m_camera); break;
 		
+			//These use m_camera2
 		case MISC_DIR_SHADOW_VISUALISED: return new me::ShadowMappingVisualised(m_window, m_camera2);
 		case MISC_CSM_VISUALISED: return new me::CSMVisualised(m_window, m_camera2); break;
+		case LGL_PBR_BASIC: return new PbrBasic(m_window, m_camera2); break;
+		case LGL_PBR_TEXTURED: return new PbrTextured(m_window, m_camera2); break;
+		case LGL_IBR_DIFFUSE_IRRADIANCE_1: return new IblDiffuseIrradiance1(m_window, m_camera2); break;
+		case LGL_IBR_DIFFUSE_IRRADIANCE_2: return new IblDiffuseIrradiance2(m_window, m_camera2); break;
 	}
 	return new CoordSys(&m_camera, nullptr);
 }

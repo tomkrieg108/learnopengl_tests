@@ -4,9 +4,13 @@ out vec4 FragColor;
 in VS_OUT {
     vec3 FragPos;
     vec2 TexCoords;
-    vec3 TangentLightPos;
-    vec3 TangentViewPos;
-    vec3 TangentFragPos;
+    //vec3 TangentLightPos;
+    //vec3 TangentViewPos;
+    //vec3 TangentFragPos;
+
+     //I added
+    vec3 TangentLightDir;
+    vec3 TangentViewDir;
 } fs_in;
 
 uniform sampler2D diffuseMap;
@@ -27,11 +31,13 @@ void main()
     // ambient
     vec3 ambient = 0.1 * color;
     // diffuse
-    vec3 lightDir = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
+    //vec3 lightDir = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
+    vec3 lightDir = normalize(fs_in.TangentLightDir);
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
     // specular
-    vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
+    //vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
+    vec3 viewDir = normalize(fs_in.TangentViewDir);
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
