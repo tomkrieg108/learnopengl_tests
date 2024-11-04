@@ -254,12 +254,27 @@ namespace v2
 		glm::vec3 pos = (glm::vec3)m_transform[3];
 		return pos;
 	}
-
-	glm::vec3& Camera::Front()
+	glm::vec3 Camera::Position()
 	{
-		glm::vec3 z = (glm::vec3)m_transform[3];
+		return GetPosition();
+	}
+
+	glm::vec3 Camera::Front()
+	{
+		glm::vec3 z = (glm::vec3)m_transform[2];
 		return -z;  //camera looks in -ve z dir
 	}
+
+	glm::vec3 Camera::Right()
+	{
+		return (glm::vec3)m_transform[0]; //local x
+	}
+
+	glm::vec3 Camera::Up()
+	{
+		return (glm::vec3)m_transform[1]; //local y
+	}
+	
 
 	void Camera::LookAt(glm::vec3& look_pos)
 	{

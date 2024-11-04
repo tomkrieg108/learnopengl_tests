@@ -114,7 +114,8 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_PBR_BASIC);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_PBR_TEXTURED);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_IBR_DIFFUSE_IRRADIANCE_1);
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_IBR_DIFFUSE_IRRADIANCE_2);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_IBR_DIFFUSE_IRRADIANCE_2);
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_FRUSTUM_CULLING);
 
 	EventManager::SetCallback(this, &App::OnMouseMove);
 	EventManager::SetCallback(this, &App::OnMouseLDown);

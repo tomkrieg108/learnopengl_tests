@@ -60,6 +60,7 @@ void SceneGraph::Startup()
 		lastEntity->transform.setLocalScale({ scale, scale, scale });
 	}
 	m_entity->updateSelfAndChild();
+
 }
 
 void SceneGraph::Shutdown()

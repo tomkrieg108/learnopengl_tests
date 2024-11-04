@@ -1,75 +1,38 @@
 #pragma once
 #include "vector.h"
-#include "point.h"
 
-namespace jmk
+namespace geom
 {
-	template<class T>
-	class Plane {
-		// Based on the normal-point form ( n . X = d ) definition of a plane 
-		Vector3f normal;
-		float d = 0; //Ax + By + Cz = d, where d = dot product between normal and a known point on a plane
-	public:
+	template <typename coord_type>
+	struct Plane
+	{
+		static_assert(std::is_floating_point_v<coord_type>, "Type must be float or double");
+		using glm_vec3 = glm::vec<3, coord_type>;
+		using glm_point3 = glm::vec<3, coord_type>;
+		
 
-		Plane() {}
-
-		Plane(Vector3f& _normal) :normal(_normal) {
-			normal.normalize();
+		glm_vec3 normal;
+		float d;		//ax + dy + cz = d  
+		
+		Plane(const glm_vec3& normal, float d) 
+			: normal{ normal}, d{d}
+		{ 
+			this->normal = glm::normalize(normal);
 		}
 
-		// Make sure to calculate the _constant using normalized vector.
-		Plane(Vector3f& _normal, float _constant) : normal(_normal), d(_constant) {
-			normal.normalize();
-		}
-
-		Plane(Vector3f& _normal, Point3d& _point)
+		//if plane is view from direction of normal, points will be CCW
+		Plane(const glm_point3& p1, const glm_point3& p2, const glm_point3& p3)
 		{
-			normal = _normal;
-			d = dotProduct(normal, _point);
-		}
+			auto p1_p2 = p2 - p1;
+			auto p1_p3 = p3 - p1;
 
-		Plane(Point3d& _p1, Point3d& _p2, Point3d& _p3)
-		{
-			Vector3f v21 = _p2 - _p1;
-			Vector3f v31 = _p3 - _p1;
-
-			normal = crossProduct3d(v21, v31);
-			normal.normalize();
-
-			d = dotProduct(normal, _p1);
-		}
-
-		//Eqality check
-		bool operator==(const Plane<T>& _other)
-		{
-			if (normal == _other.normal && isEqualD(d, _other.d))
-			{
-				return true;
-			}
-			return false;
-		}
-
-		//Not equal check operator
-		bool operator!=(const Plane<T>& _other)
-		{
-			return !(*this == _other);
-		}
-
-	/*	Vector<T> getNormal() const
-		{
-			return normal;
-		}*/
-
-		Vector3f getNormal() const
-		{
-			return normal;
-		}
-
-		float getD() const
-		{
-			return d;
+			normal = glm::cross(p1_p2, p1_p3);
+			normal = glm::normalize(normal); //todo - does normlising change d?
+			d = glm::dot(normal, p1);
 		}
 	};
 
-	typedef Plane<float> Planef;
+	using Planef = Plane<float>;
+	
 }
+

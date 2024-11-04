@@ -328,7 +328,7 @@ struct AABB : public BoundingVolume
 	};
 };
 
-Frustum createFrustumFromCamera( Camera& cam, float aspect, float fovY, float zNear, float zFar)
+inline Frustum createFrustumFromCamera( v2::Camera& cam, float aspect, float fovY, float zNear, float zFar)
 {
 	Frustum     frustum;
 	const float halfVSide = zFar * tanf(fovY * .5f);
@@ -344,7 +344,7 @@ Frustum createFrustumFromCamera( Camera& cam, float aspect, float fovY, float zN
 	return frustum;
 }
 
-AABB generateAABB(const lgl::Model& model)
+inline AABB generateAABB(const lgl::Model& model)
 {
 	glm::vec3 minAABB = glm::vec3(std::numeric_limits<float>::max());
 	glm::vec3 maxAABB = glm::vec3(std::numeric_limits<float>::min());
@@ -365,7 +365,7 @@ AABB generateAABB(const lgl::Model& model)
 	return AABB(minAABB, maxAABB);
 }
 
-Sphere generateSphereBV(const lgl::Model& model)
+inline Sphere generateSphereBV(const lgl::Model& model)
 {
 	glm::vec3 minAABB = glm::vec3(std::numeric_limits<float>::max());
 	glm::vec3 maxAABB = glm::vec3(std::numeric_limits<float>::min());

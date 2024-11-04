@@ -3,34 +3,32 @@
 #include <cmath>
 #include <cassert>
 
-namespace jmk
+namespace geom
 {
-#define EPSILON 0.000001
-#define TOLERANCE 0.000001
-#define ZERO 0.0
-
-enum RELATIVE_POSITION {
+	enum RelativePos 
+	{
 		LEFT, RIGHT, BEYOND, BEHIND, BETWEEN, ORIGIN, DESTINATION
 	};
 
-	template <typename type>
-	static bool IsEqual(type x, type y)
+	constexpr float Tolerance(const float factor = 10.0f)
 	{
-		static_assert(std::is_floating_point_v<type>, "Type must be float or double");
-		return std::fabs(x - y) < EPSILON;
+		return std::numeric_limits<float>::epsilon() * factor;
+	}
+	
+	inline bool Equal(float v1, float v2)
+	{
+		return std::fabs(v1 - v2) < Tolerance();
 	}
 
-	static bool isEqualD(double x, double y)
-	{
-		return fabs(x - y) < TOLERANCE;
-	}
+		/*template <typename type>
+		static inline bool IsEqual(type x, type y)
+		{
+			static_assert(std::is_floating_point_v<type>, "Type must be float or double");
+			return std::fabs(x - y) < EPSILON;
+		}*/
 
-	static bool _xor(bool x, bool y) {
+	inline bool Xor(bool x, bool y) {
 		return x ^ y;
-	}
-
-	static float RadianceToDegrees(float radiance) {
-		return radiance * 360 / (2 * M_PI);
 	}
 }
 

@@ -155,6 +155,11 @@
 		 auto& GetOrthoParameters() { return m_ortho_params; }
 
 		 glm::vec3 GetPosition();
+		 glm::vec3 Position();
+		 glm::vec3 Front();
+		 glm::vec3 Up();
+		 glm::vec3 Right();
+
 		 glm::mat4& GetTransform() { return m_transform; }
 
 		 float ZNear() 
@@ -174,7 +179,7 @@
 				 m_perspective_params.fov : 0;
 		 }
 
-		 glm::vec3& Front();
+		 
 
 		 void SetZNear(float znear)
 		 {

@@ -65,6 +65,7 @@
 #include "8.guest/2020/skeletal_animation/skeletal_animation.h"
 #include "8.guest/2021/csm/csm.h"
 #include "8.guest/2021/scene/scene_graph/scene_graph.h"
+#include "8.guest/2021/scene/frustum_culling/frustum_culling.h"
 #include "8.guest/2021/tesselation/height_maps/height_map_cpu.h"
 #include "8.guest/2021/tesselation/tesselation/tesselation.h"
 
@@ -147,6 +148,7 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case LGL_SKELETAL_ANIMATION: return new SkeletalAnimation(m_window, m_camera); break;
 		case LGL_CSM: return new CSM(m_window, m_camera); break;
 		case LGL_SCENE_GRAPH: return new SceneGraph(m_window, m_camera); break;
+		case LGL_FRUSTUM_CULLING: return new FrustumCulling(m_window, m_camera2); break;
 		case LGL_HEIGHT_MAP_CPU: return new LayerHeightMapCPU(m_camera); break;
 		case LGL_HEIGHT_MAP_TESSELATION: return new Tesselation(m_window, m_camera);
 
@@ -158,7 +160,7 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case SB7_CH5_VERTEX_ARRAYS: return new sb7::LightMapSpecular(m_camera); break;
 
 		case MISC_ANIMATED_MODEL_BASIC: return new me::BasicModelTest(m_window, m_camera); break;
-		case MISC_COMP_GEOM: return new jmk::CompGeom(m_window, m_camera); break;
+		case MISC_COMP_GEOM: return new geom::CompGeom(m_window, m_camera); break;
 		
 			//These use m_camera2
 		case MISC_DIR_SHADOW_VISUALISED: return new me::ShadowMappingVisualised(m_window, m_camera2);

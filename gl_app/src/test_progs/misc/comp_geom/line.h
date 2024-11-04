@@ -1,94 +1,48 @@
 #pragma once
-
 #include "vector.h"
-#include "point.h"
 
-namespace jmk
+namespace geom
 {
-	
-	template<class coord_type, size_t dim = Dim3>
-	class LineStd {
-		Vector<coord_type, dim> point;
-		Vector<coord_type, dim> dir;
-		Vector<coord_type, dim> second;
-		float d;
+	template <class coord_type, uint32_t dim = 3>
+	struct Line
+	{
+		static_assert(std::is_floating_point_v<coord_type>, "Type must be float or double");
+		static_assert((dim == 2) || (dim == 3), "Line dimension must be 2 or 3");
+		using glm_vec = glm::vec<dim, coord_type>;
+		using glm_point = glm::vec<dim, coord_type>;
 
-	public:
-		LineStd() {}
-
-		LineStd(Vector<coord_type, dim>& p1, Vector<coord_type, dim>& p2, bool points = false) {
-			if (points) {
-				dir = p2 - p1;
-				second = p2;
-			}
-			else
-				dir = p2;
-
-			dir.normalize();
-			point = p1;
+		Line(const glm_point& start_point, const glm_point& end_point) :
+			start_point{ start_point }, end_point{ end_point }
+		{
+			direction = glm::normalize(end_point - start_point);
 		}
 
-		Vector<coord_type, dim> getPoint() const;
+		static Line LineFromPoints(const glm_point& start_point, const glm_point& end_point)
+		{
+			Line line{};
+			line.start_point = start_point;
+			line.end_point = end_point;
+			line.direction = glm::normalize(end_point - start_point);
+			return line;
+		}
+		static Line FromPointAndDirection(const glm_point& start_point, const glm_vec& direction)
+		{
+			Line line{};
+			line.start_point = start_point;
+			line.end_point = start_point + direction;
+			line.direction = glm::normalize(direction);
+			return line;
+		}
 
-		Vector<coord_type, dim> getSecondPoint() const;
+		glm_point start_point;
+		glm_point end_point;
+		glm_vec direction; //normalized
 
-		Vector<coord_type, dim> getDir() const;
-
-		float getD() const;
-
-		void setDirection(Vector<coord_type, dim>& _dir);
-
-		void setPoint(Vector<coord_type, dim>& _point);
-
-		void setD(float value);
-
+	private:
+		//todo - needs variable number of args
+		Line(){};
 	};
 
-	template<class coord_type, size_t dim>
-	inline Vector<coord_type, dim> LineStd<coord_type, dim>::getPoint()const
-	{
-		return point;
-	}
-
-	template<class coord_type, size_t dim>
-	inline Vector<coord_type, dim> LineStd<coord_type, dim>::getSecondPoint() const
-	{
-		return second;
-	}
-
-	template<class coord_type, size_t dim>
-	inline Vector<coord_type, dim> LineStd<coord_type, dim>::getDir() const
-	{
-		return dir;
-	}
-
-	template<class coord_type, size_t dim>
-	inline float LineStd<coord_type, dim>::getD() const
-	{
-		return d;
-	}
-
-	template<class coord_type, size_t dim>
-	inline void LineStd<coord_type, dim>::setDirection(Vector<coord_type, dim>& _dir)
-	{
-		dir = _dir;
-	}
-
-	template<class coord_type, size_t dim>
-	inline void LineStd<coord_type, dim>::setPoint(Vector<coord_type, dim>& _point)
-	{
-		point = _point;
-	}
-
-	template<class coord_type, size_t dim>
-	inline void LineStd<coord_type, dim>::setD(float value)
-	{
-		d = value;
-	}
-
-	using Line2dStd = LineStd<float, Dim2>;
-	using Line3dStd = LineStd<float, Dim3>;
-
-	using Line2d = LineStd<float, Dim2>;
-	using Line3d = LineStd<float, Dim3>;
+	using Line2d = Line<float, 2>;
+	using Line3d = Line<float, 3>;
 }

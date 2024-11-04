@@ -1,21 +1,16 @@
 #pragma once
-// Include functions to calculate intersection between different geometric promitives
-#include "point.h"
+
+#include "vector.h"
 #include "line.h"
 #include "plane.h"
-//#include "segment.h"
-//#include "polygon.h"
-//#include "polyhedron.h"
 
-namespace jmk {
+namespace geom {
 
-	//// Return true if 2d segments represeted by points are intersecting. Store the intersecting point in final argument
-	//// 1 - start point of first segment
-	//// 2 - end point of first segmenet
-	//// 3 - start point of second segment
-	//// 4 - end point of second segment
-	//// 5 - intersection point
-	bool intersect(jmk::Point2d&, jmk::Point2d&, jmk::Point2d&, jmk::Point2d&, jmk::Point2d&);
+	//a -> b is line1
+	//c -> d is line2
+	bool Lines2dIntersect(const Point2d& a, const Point2d& b,
+		const Point2d& c, const Point2d& d);
+
 
 	//// Return true if 2d segments represeted by points are intersecting. Store the intersecting point in final argument
 	//// 1 - start point of first segment
@@ -23,10 +18,15 @@ namespace jmk {
 	//// 3 - start point of second segment
 	//// 4 - end point of second segment
 	//// 5 - intersection point
-	bool intersect(jmk::Point2d&, jmk::Point2d&, jmk::Point2d&, jmk::Point2d&, jmk::Point2d&);
+	bool GetLines2dIntersectPoint(const Point2d& p1, const Point2d& p2, 
+		const Point2d& p3, const Point2d& p4, Point2d& out_intersect_point);
 
-	// Return true if two 2d lines are intersecting and store the intersection point in final argument
-	// 1 - First line
-	// 2 - Second line
-	bool intersect(jmk::Line2d&, jmk::Line2d&, jmk::Point2d&);
+
+	bool GetLines2dIntersectPoint(const Line2d& line1, const Line2d& line2, Point2d& out_intersect_point);
+
+	//output in param 3
+	bool Intersection(const Line3d&, const Planef&, Point3d&);
+
+	bool Intersection(const Planef&, const Planef&, Line3d&);
+		
 }

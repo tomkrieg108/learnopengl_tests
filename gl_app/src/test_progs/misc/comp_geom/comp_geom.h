@@ -7,7 +7,7 @@ class Shader;
 //class Camera;
 class Window;
 
-namespace jmk
+namespace geom
 {
 	class CompGeom : public Layer
 	{

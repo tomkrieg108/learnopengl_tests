@@ -2,7 +2,6 @@
 
 #include "camera.h"
 
-//class Camera;
 class Window;
 class Layer;
 
@@ -81,6 +80,7 @@ public:
 		LGL_SKELETAL_ANIMATION,
 		LGL_CSM,
 		LGL_SCENE_GRAPH,
+		LGL_FRUSTUM_CULLING,
 		LGL_SCENE_GRAPH_QUATERNIAN, //TODO - make a transform class using quaternians
 		LGL_HEIGHT_MAP_CPU,
 		LGL_HEIGHT_MAP_TESSELATION,
