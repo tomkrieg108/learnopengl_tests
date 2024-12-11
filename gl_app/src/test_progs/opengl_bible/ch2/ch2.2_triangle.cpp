@@ -14,7 +14,7 @@ namespace sb7
 
 	void TriangleTest::Startup()
 	{
-		ShaderBuilder shader_builder("src/test_progs/opengl_bible/");
+		ShaderBuilder shader_builder("src/test_progs/opengl_bible/ch2/");
 		m_shader = shader_builder.Vert("2.2.triangle.vs").Frag("2.2.triangle.fs").Build("2.2.triangle_shader");
 		glCreateVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);

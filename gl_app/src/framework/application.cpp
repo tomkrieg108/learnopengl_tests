@@ -98,6 +98,7 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_ANIMATED_MODEL_BASIC);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_COMP_GEOM);
 	
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_GAMMA);
 	
 
 	/*---------------------------------------------------------------------
@@ -115,7 +116,15 @@ App::App()
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_PBR_TEXTURED);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_IBR_DIFFUSE_IRRADIANCE_1);
 	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_IBR_DIFFUSE_IRRADIANCE_2);
-	m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_FRUSTUM_CULLING);
+
+	m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_DIFFUSE_IRRADIANCE_1);
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::LGL_FRUSTUM_CULLING);
+	
+
+	//----------------------------------------------------------------------
+	//delete m_coords; m_coords = 0;
+	//m_layer = test_app_mgr.GetLayer(TestAppMgr::MISC_ENDLESS_GRID);
+	//----------------------------------------------------------------------
 
 	EventManager::SetCallback(this, &App::OnMouseMove);
 	EventManager::SetCallback(this, &App::OnMouseLDown);
@@ -162,6 +171,7 @@ void App::Shutdown()
 void App::Render(double now, double time_step)
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	//glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
 	//sb7 calls glClearBufferfv() - see location 1271
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // don't forget to clear the stencil buffer!
 	

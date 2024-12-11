@@ -2,6 +2,7 @@
 #include "core.h"
 #include "vector.h"
 #include "angle.h"
+#include "polygon.h"
 
 
 //Todo
@@ -51,5 +52,14 @@ namespace geom
 		const auto result = AngleLinePlane(line, plane);
 		std::cout << "AngleLinePlaneTest1: ";
 		std::cout << AngleLinePlane(line, plane) << "\n";
+	}
+
+	void CreateSimplePloygon()
+	{
+		std::list<Point2d> points{ {2,6}, {3,7}, {4,8}, {5,7} };
+
+		Polygon2d polygon2d{ points };
+
+
 	}
 }

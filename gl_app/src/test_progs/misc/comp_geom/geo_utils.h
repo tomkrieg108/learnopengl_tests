@@ -27,5 +27,11 @@ namespace geom
 	// Predicate to determine whether the [Point c] is left to the segment [a b]
 	bool Left(const Point2d& a, const Point2d& b, const Point2d& c);
 
+	bool Beyond(const Point2d& a, const Point2d& b, const Point2d& c);
+
+	bool LeftOrBeyond(const Point2d& a, const Point2d& b, const Point2d& c);
+
 	bool IsDiagonal(const Vertex2d* v1, const Vertex2d* v2, Polygon2d* poly = nullptr);
+
+	bool IsConvex(const Vertex2d* v0, const Vertex2d* v1, const Vertex2d* v2);
 }

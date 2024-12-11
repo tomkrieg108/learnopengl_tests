@@ -17,7 +17,7 @@ namespace sb7
 
 	void MovingTriangle::Startup()
 	{
-		ShaderBuilder shader_builder("src/test_progs/opengl_bible/");
+		ShaderBuilder shader_builder("src/test_progs/opengl_bible/ch3/");
 		m_shader = shader_builder.Vert("3.1.moving_triangle.vs").Frag("3.1.moving_triangle.fs").Build("3.1.moving_triangle_shader");
 		glCreateVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);

@@ -14,7 +14,7 @@ namespace sb7
 
 	void PointTest::Startup()
 	{
-		ShaderBuilder shader_builder("src/test_progs/opengl_bible/");
+		ShaderBuilder shader_builder("src/test_progs/opengl_bible/ch2/");
 		m_shader = shader_builder.Vert("2.1.point.vs").Frag("2.1.point.fs").Build("2.1.point_shader");
 		glCreateVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);

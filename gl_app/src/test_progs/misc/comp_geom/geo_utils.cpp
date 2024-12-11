@@ -77,6 +77,35 @@ namespace geom
 		return Orientation2d(a, b, c) == RelativePos::LEFT;
 	}
 
+	bool Beyond(const Point2d& a, const Point2d& b, const Point2d& c)
+	{
+		return Orientation2d(a, b, c) == RelativePos::BEYOND;
+	}
+
+	bool LeftOrBeyond(const Point2d& a, const Point2d& b, const Point2d& c)
+	{
+		return Left(a, b, c) || Beyond(a, b, c);
+	}
+
+	bool IsConvex(const Vertex2d* v0, const Vertex2d* v1, const Vertex2d* v2)
+	{
+		return LeftOrBeyond(v0->point, v1->point, v2->point);
+	}
+
+	static bool InteriorCheck(const Vertex2d* v1, const Vertex2d* v2)
+	{
+		if (LeftOrBeyond(v1->point, v1->next->point, v1->prev->point))
+		{
+			//v1 is convex
+			return Left(v1->point, v2->point, v1->prev->point) &&
+				Left(v2->point, v1->point, v1->prev->point);
+		}
+		//v1 is reflex
+		return !LeftOrBeyond(v1->point, v2->point, v1->prev->point) &&
+			LeftOrBeyond(v2->point, v1->point, v1->prev->point);
+	}
+
+
 	/*
 Diagonal check - meaning a line between 2 vertices is entirely within the polygon (assuming CCW) - m
 
@@ -104,7 +133,8 @@ Diagonal check - meaning a line between 2 vertices is entirely within the polygo
 			}
 		}
 
-		Vertex2d* current, * next;
+		Vertex2d* current;
+		Vertex2d* next;
 		current = vertices[0];
 		do
 		{
@@ -112,13 +142,12 @@ Diagonal check - meaning a line between 2 vertices is entirely within the polygo
 			if(current != v1 && next != v1 && current != v2 && next != v2 &&
 				geom::Lines2dIntersect(v1->point, v2->point, current->point, next->point))
 			{
-				prospect = false;
+				prospect = false; //cannot be a diagonal
 				break;
 			}
-
-
+			current = next;
 		} while (current != vertices[0]);
 
-		return false;
+		return prospect && InteriorCheck(v1, v2) && InteriorCheck(v2, v1);
 	}
 }

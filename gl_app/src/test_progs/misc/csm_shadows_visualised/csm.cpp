@@ -424,8 +424,6 @@ namespace me {
     center /= corners.size();
 
     const auto lightView = glm::lookAt(center + m_light_dir, center, glm::vec3(0.0f, 1.0f, 0.0f));
-    //+ve z dir of camera = -Front()
-    //const auto lightView = glm::lookAt(center + -m_camera_light->Front(), center, glm::vec3(0.0f, 1.0f, 0.0f));
 
     float minX = std::numeric_limits<float>::max();
     float maxX = std::numeric_limits<float>::lowest();
@@ -643,7 +641,6 @@ namespace me {
     // set light uniforms
     m_shader->SetUniform3f("viewPos", m_camera.GetPosition());
     m_shader->SetUniform3f("lightDir", m_light_dir);
-    //m_shader->SetUniform3f("lightDir", -m_camera_light->Front());
     m_shader->SetUniform1f("farPlane", m_camera.ZFar());
     m_shader->SetUniform1i("cascadeCount", m_shadow_cascade_levels.size());
     for (size_t i = 0; i < m_shadow_cascade_levels.size(); ++i)

@@ -16,7 +16,7 @@ namespace sb7
 
 	void GeomTriangle::Startup()
 	{
-		ShaderBuilder shader_builder("src/test_progs/opengl_bible/");
+		ShaderBuilder shader_builder("src/test_progs/opengl_bible/ch3/");
 		m_shader = shader_builder.Vert("3.3.geom_triangle.vs")
 			.TessCtrl("3.2.tesselated_triangle.tcs.glsl")
 			.TessEval("3.2.tesselated_triangle.tes.glsl")

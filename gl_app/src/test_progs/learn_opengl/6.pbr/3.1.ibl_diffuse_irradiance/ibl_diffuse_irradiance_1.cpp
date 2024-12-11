@@ -57,6 +57,9 @@ void IblDiffuseIrradiance1::Startup()
   //irradianceShader = shader_builder.Vert("2.1.2.pbr.vs").Frag("2.1.2.irradiance_convolution.fs").Build("irradiance Shader");
   backgroundShader = shader_builder.Vert("2.1.2.background.vs").Frag("2.1.2.background.fs").Build("Background shader");
 
+  //ShaderBuilder shader_builder2("src/test_progs/learn_opengl/6.pbr/1.pbr_basic/");
+  //pbrShader = shader_builder2.Vert("1.1.pbr.vs").Frag("1.1.pbr.fs").Build("Basic PBR shader");
+
   pbrShader->Bind();
   //pbrShader->SetUniform1i("irradianceMap", 0);
   pbrShader->SetUniform3f("albedo", 0.5f, 0.0f, 0.0f);
@@ -114,7 +117,7 @@ void IblDiffuseIrradiance1::Startup()
 
   // pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
   // ----------------------------------------------------------------------------------------------
-  glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+  captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
   captureViews[0] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
   captureViews[1] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
   captureViews[2] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -129,7 +132,6 @@ void IblDiffuseIrradiance1::Startup()
   equirectangularToCubemapShader->SetUniformMat4f("projection", captureProjection);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, hdrTexture);
-
   glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
   glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
   for (unsigned int i = 0; i < 6; ++i)
@@ -137,11 +139,10 @@ void IblDiffuseIrradiance1::Startup()
     equirectangularToCubemapShader->SetUniformMat4f("view", captureViews[i]);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     renderCube();
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+  
   // initialize static shader uniforms before rendering
   // --------------------------------------------------
   //glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -163,10 +164,19 @@ void IblDiffuseIrradiance1::Shutdown()
 
 void IblDiffuseIrradiance1::OnUpdate(double now, double time_step)
 {
+  // pbr: convert HDR equirectangular environment map to cubemap equivalent
+   // ----------------------------------------------------------------------
+  /*equirectangularToCubemapShader->Bind();
+  equirectangularToCubemapShader->SetUniform1i("equirectangularMap", 0);
+  equirectangularToCubemapShader->SetUniformMat4f("view", m_camera.GetViewMatrix());
+  equirectangularToCubemapShader->SetUniformMat4f("projection", m_camera.GetProjMatrix());
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, hdrTexture);
+  renderCube();*/
+
   // render scene, supplying the convoluted irradiance map to the final shader.
   // ------------------------------------------------------------------------------------------
   pbrShader->Bind();
-  //glm::mat4 view = camera.GetViewMatrix();
   pbrShader->SetUniformMat4f("view", m_camera.GetViewMatrix());
   pbrShader->SetUniform3f("camPos", m_camera.GetPosition());
 
@@ -217,7 +227,6 @@ void IblDiffuseIrradiance1::OnUpdate(double now, double time_step)
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
   renderCube();
-
 }
 
 void IblDiffuseIrradiance1::ImGuiUpdate()

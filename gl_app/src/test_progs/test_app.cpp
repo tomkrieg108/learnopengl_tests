@@ -8,6 +8,9 @@
 #include "misc/comp_geom/comp_geom.h"
 #include "misc/dir_shadows_visualised/shadow_mapping.h"
 #include "misc/csm_shadows_visualised/csm.h"
+#include "misc/pbr_diffuse_irradiance_1/ibl_diffuse_1.h"
+#include "misc/endless_grid/endless_grid.h"
+#include "misc/gamma/gamma.h"
 
 #include "1.getting_started/4.1.textures/texture_test.h"
 #include "1.getting_started/4.2.textures_combined/textures_combined.h"
@@ -169,6 +172,10 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case LGL_PBR_TEXTURED: return new PbrTextured(m_window, m_camera2); break;
 		case LGL_IBR_DIFFUSE_IRRADIANCE_1: return new IblDiffuseIrradiance1(m_window, m_camera2); break;
 		case LGL_IBR_DIFFUSE_IRRADIANCE_2: return new IblDiffuseIrradiance2(m_window, m_camera2); break;
+
+		case MISC_ENDLESS_GRID: return new EndlessGrid(m_window, m_camera2);
+		case MISC_DIFFUSE_IRRADIANCE_1: return new IblDiffuse(m_window, m_camera2);
+		case MISC_GAMMA:  return new Gamma();
 	}
 	return new CoordSys(&m_camera, nullptr);
 }

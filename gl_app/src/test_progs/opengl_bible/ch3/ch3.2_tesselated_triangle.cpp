@@ -16,7 +16,7 @@ namespace sb7
 
 	void TesselatedTriangle::Startup()
 	{
-		ShaderBuilder shader_builder("src/test_progs/opengl_bible/");
+		ShaderBuilder shader_builder("src/test_progs/opengl_bible/ch3/");
 		m_shader = shader_builder.Vert("3.2.tesselated_triangle.vs").TessCtrl("3.2.tesselated_triangle.tcs.glsl").
 			TessEval("3.2.tesselated_triangle.tes.glsl").Frag("3.2.tesselated_triangle.fs").Build("Sec3_1_shader");
 		glCreateVertexArrays(1, &VAO);

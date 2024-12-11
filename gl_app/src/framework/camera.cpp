@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtx/vector_angle.hpp>
+#include <cmath>	//abs
 
 inline namespace v1
 {
@@ -275,18 +276,77 @@ namespace v2
 		return (glm::vec3)m_transform[1]; //local y
 	}
 	
-
 	void Camera::LookAt(glm::vec3& look_pos)
 	{
 		glm::vec3 pos = (glm::vec3)m_transform[3];
 		glm::vec3 z = -glm::normalize(look_pos - pos); // negative front
-		glm::vec3 x = glm::normalize(glm::cross(glm::vec3(0,1,0),z));
+		glm::vec3 up = glm::vec3(0, 1, 0);
+		// Check if z is parallel to the global up vector
+		if (glm::abs(glm::dot(z, up)) > 0.99f) {
+			// Choose a different "up" vector to avoid degeneracy
+			up = glm::vec3(1, 0, 0); // Global X-axis as a fallback
+		}
+		glm::vec3 x = glm::normalize(glm::cross(up,z));
 		glm::vec3 y = glm::normalize(glm::cross(z, x));
-
 		m_transform[0] = glm::vec4{ x,0.0f };
 		m_transform[1] = glm::vec4{ y,0.0f };
 		m_transform[2] = glm::vec4{ z,0.0f };
 	}
+
+	//When setting up cube map, up vector needs to be in a specific direction depending on the face direction
+	//So use this version.  (ChatGPT "Equirectangular Projections)
+	void Camera::LookAt(glm::vec3& look_pos, glm::vec3& up) 
+	{
+		glm::vec3 pos = glm::vec3(m_transform[3]);
+		glm::vec3 z = -glm::normalize(look_pos - pos); // Negative front
+		glm::vec3 x = glm::normalize(glm::cross(up, z));
+		glm::vec3 y = glm::normalize(glm::cross(z, x));
+		m_transform[0] = glm::vec4{ x, 0.0f };
+		m_transform[1] = glm::vec4{ y, 0.0f };
+		m_transform[2] = glm::vec4{ z, 0.0f };
+	}
+
+
+
+	void Camera::InvertXYAxes()
+	{
+		m_transform[0] = -m_transform[0];
+		m_transform[1] = -m_transform[1];
+	}
+
+	//void Camera::LookAt(glm::vec3& look_pos)
+	//{
+	//	glm::vec3 pos = (glm::vec3)m_transform[3];
+	//	glm::vec3 z = -glm::normalize(look_pos - pos); // negative front
+	//	glm::vec3 up = glm::vec3(0, -1, 0);
+	//	// Check if z is parallel to the global up vector
+	//	if (glm::abs(glm::dot(z, up)) > 0.99f) {
+	//		// Choose a different "up" vector to avoid degeneracy
+	//		up = glm::vec3(-1, 0, 0); // Global X-axis as a fallback
+	//	}
+	//	glm::vec3 x = glm::normalize(glm::cross(up, z));
+	//	glm::vec3 y = glm::normalize(glm::cross(z, x));
+	//	m_transform[0] = glm::vec4{ x,0.0f };
+	//	m_transform[1] = glm::vec4{ y,0.0f };
+	//	m_transform[2] = glm::vec4{ z,0.0f };
+	//}
+
+	//void Camera::LookAt(glm::vec3& look_pos)
+	//{
+	//	glm::vec3 pos = (glm::vec3)m_transform[3];
+	//	glm::vec3 z = glm::normalize(look_pos - pos); // negative front
+	//	glm::vec3 up = glm::vec3(0, 1, 0);
+	//	// Check if z is parallel to the global up vector
+	//	if (glm::abs(glm::dot(z, up)) > 0.99f) {
+	//		// Choose a different "up" vector to avoid degeneracy
+	//		up = glm::vec3(1, 0, 0); // Global X-axis as a fallback
+	//	}
+	//	glm::vec3 x = glm::normalize(glm::cross(up, z));
+	//	glm::vec3 y = glm::normalize(glm::cross(z, x));
+	//	m_transform[0] = glm::vec4{ x,0.0f };
+	//	m_transform[1] = glm::vec4{ y,0.0f };
+	//	m_transform[2] = glm::vec4{ z,0.0f };
+	//}
 
 	void Camera::MoveForward(float amount)
 	{

@@ -7,7 +7,6 @@
 CoordSys::CoordSys(Camera* camera, v2::Camera* camera2) :
 	m_camera(camera), m_camera2(camera2)
 {
-	int a = 1;
 }
 
 void CoordSys::Startup()
@@ -32,6 +31,7 @@ void CoordSys::Startup()
 	y = -0.01f;
 	std::array<float, 4> grid_colour{ 0.5f,0.5f,0.5f,1.0f };
 
+#if 1
 	z = -extent;
 	while (z < extent + 0.1f)
 	{
@@ -58,7 +58,7 @@ void CoordSys::Startup()
 
 		x += step;
 	}
-
+#endif
 
 	//world coord sys
 	float y_offset = 0.01f;

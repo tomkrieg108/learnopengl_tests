@@ -23,6 +23,21 @@ const float PI = 3.14159265359;
 // Don't worry if you don't get what's going on; you generally want to do normal 
 // mapping the usual way for performance anyways; I do plan make a note of this 
 // technique somewhere later in the normal mapping tutorial.
+
+/*
+    dFdx() and dFdy() get the difference in parameter value between the current 
+    screen space pixel and adjacent screen-space pixel.
+    This is actually the same as the method derived in learnopenGL
+    An in the paper notes, DeltaU and DeltaV in the notes correspond to 
+    st1 and st2, and E1 and E2 in the notes corresponding to Q1 and Q1 i.e.
+    P2-P1 and P3-P1
+    The notes show a solution that includes 1/Det, but this is only a scaling factor
+    And the N,T B get notmalised anyway
+    In this version, I think T,B,N are in terms of world coords rather than object coords as in
+    the note.
+    Note sure about the negative sign for B - maybe to do with how screen space coords are defined
+
+*/
 vec3 getNormalFromMap()
 {
     //learn OpenGL's code:
@@ -94,7 +109,9 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 // ----------------------------------------------------------------------------
 void main()
 {		
+    //Albedo testure assumbed to be in SRGB space - convert to linear.
     vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
+    //Metallic, roughness, ao already in linear space
     float metallic  = texture(metallicMap, TexCoords).r;
     float roughness = texture(roughnessMap, TexCoords).r;
     //float ao        = texture(aoMap, TexCoords).r;
@@ -137,7 +154,8 @@ void main()
         // multiply kD by the inverse metalness such that only non-metals 
         // have diffuse lighting, or a linear blend if partly metal (pure metals
         // have no diffuse light).
-        kD *= 1.0 - metallic;	  
+        //kD *= 1.0 - metallic;	  
+        kD *= (1.0 - metallic);	//seems to be exactly the same as without the brackets!  
 
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);        

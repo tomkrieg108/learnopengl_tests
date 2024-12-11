@@ -159,6 +159,7 @@
 		 glm::vec3 Front();
 		 glm::vec3 Up();
 		 glm::vec3 Right();
+		 void InvertXYAxes();
 
 		 glm::mat4& GetTransform() { return m_transform; }
 
@@ -206,6 +207,7 @@
 		 // Controller
 		 void SetPosition(glm::vec3& position);
 		 void LookAt(glm::vec3& look_pos);
+		 void LookAt(glm::vec3& look_pos, glm::vec3& up);
 		 void MoveForward(float amount);
 		 void MoveRight(float amount);
 		 void MoveVertically(float amount);

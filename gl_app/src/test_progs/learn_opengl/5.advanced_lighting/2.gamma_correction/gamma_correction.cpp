@@ -47,7 +47,7 @@ static glm::vec3 lightColors[] = {
 
 // utility function for loading a 2D texture from file
 // ---------------------------------------------------
-unsigned int GammaCorrection::loadTexture(char const* path)
+unsigned int GammaCorrection::loadTexture(char const* path, bool gamma_correction)
 {
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -56,16 +56,28 @@ unsigned int GammaCorrection::loadTexture(char const* path)
     unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format;
+        GLenum dataFormat=0;
+        GLenum internalFormat=0;
         if (nrComponents == 1)
-            format = GL_RED;
+        {
+          dataFormat = GL_RED;
+          internalFormat = GL_RED;
+        }
+         
         else if (nrComponents == 3)
-            format = GL_RGB;
+        {
+          dataFormat = GL_RGB;
+          internalFormat = gamma_correction ? GL_SRGB : GL_RGB;
+        }
+            
         else if (nrComponents == 4)
-            format = GL_RGBA;
-
+        {
+          dataFormat = GL_RGBA;
+          internalFormat = gamma_correction ? GL_SRGB_ALPHA : GL_RGBA;
+        }
+            
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -118,16 +130,13 @@ void GammaCorrection::Startup()
 
     // load textures
     // -------------
-    floorTexture = loadTexture("assets/textures/wood.png");
-    floorTextureGammaCorrected = loadTexture("assets/textures/wood.png");
+    floorTexture = loadTexture("assets/textures/wood.png", false);
+    floorTextureGammaCorrected = loadTexture("assets/textures/wood.png", true);
 
     // shader configuration
     // --------------------
     m_shader->Bind();
     m_shader->SetUniform1i("texture1", 0);
-
-
-
     m_shader->OutputInfo();
 }
 

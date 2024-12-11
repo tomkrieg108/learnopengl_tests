@@ -20,7 +20,7 @@ private:
 	Camera& m_camera;
 	Window& m_window;
 
-	unsigned int loadTexture(char const* path);
+	unsigned int loadTexture(char const* path, bool gamma_correction);
 
 	unsigned int planeVAO = 0, planeVBO = 0; 
 	unsigned int floorTexture = 0; 
