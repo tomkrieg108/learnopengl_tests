@@ -47,7 +47,7 @@ namespace geom
 		EdgeDCEL() { id = -1; }
 
 		explicit EdgeDCEL(VertexDCEL<T, Dim>* origin) :
-			orogon{origin}
+			origin{origin}
 		{}
 
 		VertexDCEL<T, Dim>* Destination()
@@ -121,7 +121,11 @@ namespace geom
 
 	using Vertex2dDCEL = VertexDCEL<float, 2U>;
 	using Edge2dDCEL = EdgeDCEL<float, 2U>;
-	using Polygon2d = PolygonDCEL<float, 2U>;
+	using Polygon2dDECL = PolygonDCEL<float, 2U>;
+
+	/*typedef VertexDCEL<float, 2U>	Vertex2dDCEL;
+	typedef EdgeDCEL<float, 2U>	Edge2dDCEL;
+	typedef PolygonDCEL<float, 2U>	Polygon2d;*/
 
 	template<typename T, uint32_t Dim>
 	struct PolygonDCEL
@@ -266,12 +270,12 @@ namespace geom
 		}
 
 		//Insert edge vetween v1 and v2
-		bool Split(VertexDCEL<T, Dim>* v1, VertexDCEL<T, Dim>* v2)
+		bool Split(VertexDCEL<T, Dim>* _v1, VertexDCEL<T, Dim>* _v2)
 		{
 			// Find two edges with given points as origins and are in same face.
 			EdgeDCEL<T, Dim>* edge_oriV1;
 			EdgeDCEL<T, Dim>* edge_oriV2;
-			getEdgesWithSamefaceAndGivenOrigins(_v1, _v2, &edge_oriV1, &edge_oriV2);
+			GetEdgesWithSamefaceAndGivenOrigins(_v1, _v2, &edge_oriV1, &edge_oriV2);
 
 			if (edge_oriV1->id == -1 || edge_oriV2->id == -1)
 				return false;						// Cannot find a edges with same face with ori _v1, _v2

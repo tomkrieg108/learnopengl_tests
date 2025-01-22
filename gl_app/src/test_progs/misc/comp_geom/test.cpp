@@ -3,12 +3,17 @@
 #include "vector.h"
 #include "angle.h"
 #include "polygon.h"
+#include <cmath>
+#include <numbers>
 
 
 //Todo
 //use instructor uses GTest - need to figure out how to use
 namespace geom
 {
+
+	const float pi = std::acosf(-1.0f);
+
 	void AngleLines2DTest1()
 	{
 		glm::vec2 line1_dir{ 2,1 };
@@ -57,9 +62,34 @@ namespace geom
 	void CreateSimplePloygon()
 	{
 		std::list<Point2d> points{ {2,6}, {3,7}, {4,8}, {5,7} };
-
 		Polygon2d polygon2d{ points };
+	}
+
+	void ComputeHemisphereIntegral()
+	{
+		//If use float, sample size < about 0.001 starts giving incorrect results due to numerical limits
+		double sampleDelta = 0.001;
+		double nrSamples = 0.0;
+		double calcuated_samples = (2.0 * M_PI) * (0.5 * M_PI) / (sampleDelta * sampleDelta);
+		double I = 0;
+		for (double theta = 0.0; theta < 2.0 * M_PI; theta += sampleDelta)
+		{
+			for (double phi = 0.0; phi < 0.5 * M_PI; phi += sampleDelta)
+			{
+				//I += cos(phi) * sin(phi) * sampleDelta * sampleDelta;
+				I += cos(phi) * sin(phi);
+				nrSamples++;
+			}
+		}
+		// instead of doing this mult on each iteration in the loop, do once outside the loop - same thing!
+		I *= sampleDelta * sampleDelta;
+
+		std::cout << "I = " << I << "\n"; //Gives 3.142
+		std::cout << "Samples: " << nrSamples << "\n";
+		std::cout << "Calcuated Samples: " << calcuated_samples << "\n";
 
 
+		//std::cout << "I = " << I / nrSamples << "\n"; //Gives ~ 0.32 = 1/(PI)
+		//std::cout << "I = " << M_PI * I / nrSamples << "\n"; //Gives 1.0
 	}
 }

@@ -76,7 +76,7 @@ namespace geom
 		Vertex2d vert = Vertex2d(Point2d{ 1,0 });
 
 		std::list points{ Point2d{1,0}, Point2d{1,1}, Point2d{0,1} };
-		Polygon2d{ points };
+		Polygon2d poly = Polygon2d{points};
 
 		std::cout << "float max: " << std::numeric_limits<float>::max() << "\n";
 		std::cout << "float min: " << std::numeric_limits<float>::min() << "\n";
@@ -93,6 +93,8 @@ namespace geom
 		AngleLines2DTest1();
 		AngleLines3DTest1();
 		AngleLinePlaneTest1();
+
+		ComputeHemisphereIntegral();
 	}
 
 	void CompGeom::Shutdown()

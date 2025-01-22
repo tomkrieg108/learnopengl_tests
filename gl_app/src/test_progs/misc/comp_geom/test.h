@@ -7,4 +7,7 @@ namespace geom
 	void AngleLinePlaneTest1();
 
 	void CreateSimplePloygon();
+
+	void ComputeHemisphereIntegral();
+
 }

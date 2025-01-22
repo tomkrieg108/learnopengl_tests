@@ -4,11 +4,11 @@ in vec3 WorldPos;
 
 uniform sampler2D equirectangularMap;
 
-//since image is flipped i.e. stbi_set_flip_vertically_on_load(true) u,v = (0.0) is at bottom left of image instead of top lef.  As such v = (phi/PI + 0.5) instead of (-phi/PH + 0.5).  If dont't flip image, then need to use the latter mapping => use -0.3183 as second component in invAtan.  Get the same result.
-const vec2 invAtan = vec2(0.1591, 0.3183); 
+//since image is flipped i.e. stbi_set_flip_vertically_on_load(true) u,v = (0.0) is at bottom left of image instead of top lef.  As such v = (phi/PI + 0.5) instead of (-phi/PI + 0.5).  If dont't flip image, then need to use the latter mapping => use -0.3183 as second component in invAtan.  Get the same result.
+const vec2 invAtan = vec2(0.1591, 0.3183); //(1/2Pi, 1/Pi)
 vec2 SampleSphericalMap(vec3 v)
 {
-    vec2 uv = vec2(atan(v.z, v.x), asin(v.y)); // u:[-PH, PI], v:[-PI/2, PH/2]
+    vec2 uv = vec2(atan(v.z, v.x), asin(v.y)); // u:[-PI, PI], v:[-PI/2, PH/2]
     uv *= invAtan; 
     uv += 0.5; // u:[0,1], v: [0,1]
     return uv;

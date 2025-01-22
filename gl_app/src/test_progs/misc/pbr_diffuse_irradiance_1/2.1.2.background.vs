@@ -13,7 +13,7 @@ void main()
 	mat4 rotView = mat4(mat3(view)); //remove the translation component
 	vec4 clipPos = projection * rotView * vec4(WorldPos, 1.0);
 
-	gl_Position = clipPos.xyww;
+	gl_Position = clipPos.xyww; //xyww ensures depth value of the cube fragments are always 1 (i.e. max).  Need to also chnge depth comparison to GL_EQUAL
 
 	//Doing this will display small cube at world origin with the hdr image mapped to each side of the cube
 	//gl_Position = projection * view * vec4(WorldPos, 1.0);
