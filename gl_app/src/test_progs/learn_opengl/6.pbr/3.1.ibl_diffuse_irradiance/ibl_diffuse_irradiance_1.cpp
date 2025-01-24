@@ -54,14 +54,12 @@ void IblDiffuseIrradiance1::Startup()
   pbrShader = shader_builder.Vert("2.1.2.pbr.vs").Frag("2.1.2.pbr.fs").Build("PBR shader");
   equirectangularToCubemapShader = shader_builder.Vert("2.1.2.cubemap.vs")
     .Frag("2.1.2.equirectangular_to_cubemap.fs").Build("equirectangular To Cubemap Shader");
-  //irradianceShader = shader_builder.Vert("2.1.2.pbr.vs").Frag("2.1.2.irradiance_convolution.fs").Build("irradiance Shader");
+  irradianceShader = shader_builder.Vert("2.1.2.cubemap.vs").Frag("2.1.2.irradiance_convolution.fs").Build("irradiance Shader");
   backgroundShader = shader_builder.Vert("2.1.2.background.vs").Frag("2.1.2.background.fs").Build("Background shader");
 
-  //ShaderBuilder shader_builder2("src/test_progs/learn_opengl/6.pbr/1.pbr_basic/");
-  //pbrShader = shader_builder2.Vert("1.1.pbr.vs").Frag("1.1.pbr.fs").Build("Basic PBR shader");
-
+  
   pbrShader->Bind();
-  //pbrShader->SetUniform1i("irradianceMap", 0);
+  pbrShader->SetUniform1i("irradianceMap", 0);
   pbrShader->SetUniform3f("albedo", 0.5f, 0.0f, 0.0f);
   pbrShader->SetUniform1f("ao", 1.0f);
 
@@ -82,7 +80,11 @@ void IblDiffuseIrradiance1::Startup()
    // ---------------------------------
   stbi_set_flip_vertically_on_load(true);
   int width, height, nrComponents;
-  float* data = stbi_loadf("assets/polyhaven/hdri/christmas_photo_studio_01_2k.hdr", &width, &height, &nrComponents, 0);
+  //float* data = stbi_loadf("assets/polyhaven/hdri/christmas_photo_studio_01_2k.hdr", &width, &height, &nrComponents, 0);
+  //float* data = stbi_loadf("assets/polyhaven/hdri/wildflower_field_2k.hdr", &width, &height, &nrComponents, 0);
+  float* data = stbi_loadf("assets/polyhaven/hdri/rogland_clear_night_2k.hdr", &width, &height, &nrComponents, 0);
+  //float* data = stbi_loadf("assets/polyhaven/hdri/moonlit_golf_2k.hdr", &width, &height, &nrComponents, 0);
+  //float* data = stbi_loadf("assets/polyhaven/hdri/dikhololo_night_2k.hdr", &width, &height, &nrComponents, 0);
   if (data)
   {
     glGenTextures(1, &hdrTexture);
@@ -142,6 +144,44 @@ void IblDiffuseIrradiance1::Startup()
     renderCube();
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // pbr: create an irradiance cubemap, and re-scale capture FBO to irradiance scale.
+  // --------------------------------------------------------------------------------
+  glGenTextures(1, &irradianceMap);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+  for (unsigned int i = 0; i < 6; ++i)
+  {
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+  }
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+  glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
+
+  // pbr: solve diffuse integral by convolution to create an irradiance (cube)map.
+  // -----------------------------------------------------------------------------
+  irradianceShader->Bind();
+  irradianceShader->SetUniform1i("environmentMap", 0);
+  irradianceShader->SetUniformMat4f("projection", captureProjection);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+
+  glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
+  glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+  for (unsigned int i = 0; i < 6; ++i)
+  {
+    irradianceShader->SetUniformMat4f("view", captureViews[i]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    renderCube();
+  }
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   
   // initialize static shader uniforms before rendering
   // --------------------------------------------------
@@ -164,21 +204,16 @@ void IblDiffuseIrradiance1::Shutdown()
 
 void IblDiffuseIrradiance1::OnUpdate(double now, double time_step)
 {
-  // pbr: convert HDR equirectangular environment map to cubemap equivalent
-   // ----------------------------------------------------------------------
-  /*equirectangularToCubemapShader->Bind();
-  equirectangularToCubemapShader->SetUniform1i("equirectangularMap", 0);
-  equirectangularToCubemapShader->SetUniformMat4f("view", m_camera.GetViewMatrix());
-  equirectangularToCubemapShader->SetUniformMat4f("projection", m_camera.GetProjMatrix());
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, hdrTexture);
-  renderCube();*/
-
+  
   // render scene, supplying the convoluted irradiance map to the final shader.
   // ------------------------------------------------------------------------------------------
   pbrShader->Bind();
   pbrShader->SetUniformMat4f("view", m_camera.GetViewMatrix());
   pbrShader->SetUniform3f("camPos", m_camera.GetPosition());
+
+  // bind pre-computed IBL data
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 
   // render rows*column number of spheres with varying metallic/roughness values scaled by rows and columns respectively
   glm::mat4 model = glm::mat4(1.0f);
@@ -226,6 +261,7 @@ void IblDiffuseIrradiance1::OnUpdate(double now, double time_step)
   backgroundShader->SetUniformMat4f("view", m_camera.GetViewMatrix());
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+  //glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap); // display irradiance map
   renderCube();
 }
 

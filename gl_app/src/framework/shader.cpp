@@ -118,6 +118,22 @@ void ShaderBuilder::OutputShaderInfoLog()
 	}
 }
 
+void ShaderBuilder::OutputProgramInfoLog(uint32_t program)
+{
+	int32_t logLength = 0;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+	if (logLength > 0)
+	{
+		std::vector<char> log(logLength);
+		glGetProgramInfoLog(program, logLength, nullptr, log.data());
+		std::cout << log.data() << "\n";
+	}
+	else
+	{
+		std::cout << "No additional program log information available.\n";
+	}
+}
+
 std::unique_ptr<Shader> ShaderBuilder::Build(const std::string& name)
 {
 	auto shader = std::make_unique<Shader>();
@@ -141,8 +157,8 @@ std::unique_ptr<Shader> ShaderBuilder::Build(const std::string& name)
 	else
 	{
 		glLinkProgram(program);
-		glValidateProgram(program);
-		shader->m_is_valid = ValidationCheck(program);
+		//glValidateProgram(program);
+		//shader->m_is_valid = ValidationCheck(program);
 	}
 
 	for (auto& shader_info : m_shader_list)
@@ -159,6 +175,7 @@ bool ShaderBuilder::ValidationCheck(uint32_t program)
 	if (result == GL_FALSE)
 	{
 		std::cout << "Error linking shader program: \n";
+		OutputProgramInfoLog(program);
 	}
 	result = GL_FALSE;
 
@@ -166,6 +183,7 @@ bool ShaderBuilder::ValidationCheck(uint32_t program)
 	if (result == GL_FALSE)
 	{
 		std::cout << "Program validation failure: \n";
+		OutputProgramInfoLog(program);
 	}
 	return (bool)result;
 }
@@ -246,6 +264,32 @@ int32_t Shader::GetUniformLocation(const std::string& name)
 		
 	m_uniform_location_cache[name] = location;
 	return location;
+}
+
+void Shader::Validate()
+{
+	std::cout << "Validating shader: " << m_name << "\n";
+	glValidateProgram(m_program_id);
+
+	int32_t result = GL_FALSE;
+	glGetProgramiv(m_program_id, GL_VALIDATE_STATUS, &result);
+	if (result == GL_FALSE)
+	{
+		m_is_valid = false;
+		std::cout << "Program validation failure: \n";
+		int32_t logLength = 0;
+		glGetProgramiv(m_program_id, GL_INFO_LOG_LENGTH, &logLength);
+		if (logLength > 0)
+		{
+			std::vector<char> log(logLength);
+			glGetProgramInfoLog(m_program_id, logLength, nullptr, log.data());
+			std::cout << log.data() << "\n";
+		}
+		else
+		{
+			std::cout << "No additional program log information available.\n";
+		}
+	}
 }
 
 

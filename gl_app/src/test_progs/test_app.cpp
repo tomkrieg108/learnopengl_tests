@@ -63,8 +63,8 @@
 #include "6.pbr/1.pbr_basic/pbr_basic.h"
 #include "6.pbr/2.pbr_textured/pbr_textured.h"
 #include "6.pbr/3.1.ibl_diffuse_irradiance/ibl_diffuse_irradiance_1.h"
-#include "6.pbr/3.2.ibl_diffuse_irradiance/ibl_diffuse_irradiance_2.h"
 #include "6.pbr/4.1.ibl_specular/ibl_specular_sphere.h"
+#include "6.pbr/4.2.ibl_specular/ibl_specular_textured.h"
 #include "7.in_practice/2.text_rendering/text_rendering.h"
 #include "8.guest/2020/skeletal_animation/skeletal_animation.h"
 #include "8.guest/2021/csm/csm.h"
@@ -171,12 +171,12 @@ Layer* TestAppMgr::GetLayer(uint32_t id)
 		case MISC_CSM_VISUALISED: return new me::CSMVisualised(m_window, m_camera2); break;
 		case LGL_PBR_BASIC: return new PbrBasic(m_window, m_camera2); break;
 		case LGL_PBR_TEXTURED: return new PbrTextured(m_window, m_camera2); break;
-		case LGL_IBR_DIFFUSE_IRRADIANCE_1: return new IblDiffuseIrradiance1(m_window, m_camera2); break;
-		case LGL_IBR_DIFFUSE_IRRADIANCE_2: return new IblDiffuseIrradiance2(m_window, m_camera2); break;
+		case LGL_IBR_DIFFUSE_IRRADIANCE: return new IblDiffuseIrradiance1(m_window, m_camera2); break;
 		case LGL_IBR_SPECULAR_SPHERE: return new IblSpecularSphere(m_window, m_camera2); break;
+		case LGL_IBR_SPECULAR_TEXTURED: return new IblSpecularTextured(m_window, m_camera2); break;
 
 		case MISC_ENDLESS_GRID: return new EndlessGrid(m_window, m_camera2);
-		case MISC_DIFFUSE_IRRADIANCE_1: return new IblDiffuse(m_window, m_camera2);
+		case MISC_DIFFUSE_IRRADIANCE: return new IblDiffuse(m_window, m_camera2);
 		case MISC_GAMMA:  return new Gamma();
 	}
 	return new CoordSys(&m_camera, nullptr);

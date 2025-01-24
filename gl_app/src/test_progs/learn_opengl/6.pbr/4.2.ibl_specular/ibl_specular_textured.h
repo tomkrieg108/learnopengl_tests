@@ -6,11 +6,11 @@
 class Shader;
 class Window;
 
-class IblSpecularSphere : public Layer
+class IblSpecularTextured : public Layer
 {
 public:
 
-	IblSpecularSphere(Window& window, v2::Camera& camera);
+	IblSpecularTextured(Window& window, v2::Camera& camera);
 	void Startup() override;
 	void Shutdown() override;
 	void OnUpdate(double now, double time_step) override;
@@ -49,6 +49,29 @@ private:
 	uint32_t ironRoughnessMap = 0;
 	uint32_t ironAOMap = 0;
 
+	uint32_t graniteAlbedoMap = 0;
+	uint32_t graniteNormalMap = 0;
+	uint32_t graniteMetallicMap = 0;
+	uint32_t graniteRoughnessMap = 0;
+	uint32_t graniteAOMap = 0;
+
+	uint32_t goldAlbedoMap = 0;
+	uint32_t goldNormalMap = 0;
+	uint32_t goldMetallicMap = 0;
+	uint32_t goldRoughnessMap = 0;
+	uint32_t goldAOMap = 0;
+
+	uint32_t stoneAlbedoMap = 0;
+	uint32_t stoneNormalMap = 0;
+	uint32_t stoneMetallicMap = 0;
+	uint32_t stoneRoughnessMap = 0;
+	uint32_t stoneAOMap = 0;
+
+	uint32_t meadowAlbedoMap = 0;
+	uint32_t meadowNormalMap = 0;
+	uint32_t meadowMetallicMap = 0;
+	uint32_t meadowRoughnessMap = 0;
+	uint32_t meadowAOMap = 0;
 
 
 

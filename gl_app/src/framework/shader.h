@@ -34,6 +34,7 @@ private:
 	ShaderInfo Compile(uint32_t type, const std::string& filepath);
 	bool ValidationCheck(uint32_t program);
 	void OutputShaderInfoLog();
+	void OutputProgramInfoLog(uint32_t program);
 	std::string m_shader_directory;
 
 private:
@@ -63,9 +64,10 @@ public:
 	void SetUniformMat3f(const std::string& name, const glm::mat3& matrix);
 	void SetUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
-	uint32_t GetProgramID() { return m_program_id; }
+	uint32_t GetProgramID() const { return m_program_id; }
 	std::string GetName() { return m_name; }
-	bool IsValid() { return m_is_valid; }
+	void Validate();
+	bool IsValid() const { return m_is_valid; }
 	void OutputInfo();
 	
 private:
@@ -81,7 +83,7 @@ private:
 	
 private:
 	std::string m_name = "";
-	bool m_is_valid = false;
+	bool m_is_valid = true;
 	uint32_t m_program_id = 0;
 	std::unordered_map<std::string, int> m_uniform_location_cache;
 

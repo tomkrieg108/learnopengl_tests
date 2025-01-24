@@ -23,7 +23,7 @@ private:
 	Window& m_window;
 	std::unique_ptr<Shader> pbrShader = nullptr;
 	std::unique_ptr<Shader> equirectangularToCubemapShader = nullptr;
-	//std::unique_ptr<Shader> irradianceShader = nullptr;
+	std::unique_ptr<Shader> irradianceShader = nullptr;
 	std::unique_ptr<Shader> backgroundShader = nullptr;
 
 	//render id's

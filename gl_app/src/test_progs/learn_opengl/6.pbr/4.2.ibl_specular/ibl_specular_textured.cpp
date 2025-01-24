@@ -16,7 +16,7 @@
 #include "shader.h"
 
 #include <cmath>
-#include "ibl_specular_sphere.h"
+#include "ibl_specular_textured.h"
 
 // lights
 // ------
@@ -36,7 +36,7 @@ static int nrRows = 7;
 static int nrColumns = 7;
 static float spacing = 2.5;
 
-IblSpecularSphere::IblSpecularSphere(Window& window, v2::Camera& camera) :
+IblSpecularTextured::IblSpecularTextured(Window& window, v2::Camera& camera) :
 	m_window{ window }, m_camera{ camera }
 {
   float aspect_ratio = (float)m_window.BufferWidth() / (float)m_window.BufferHeight();
@@ -46,29 +46,34 @@ IblSpecularSphere::IblSpecularSphere(Window& window, v2::Camera& camera) :
   m_camera.LookAt(glm::vec3{ 0,0,0 });
 }
 
-void IblSpecularSphere::Startup()
+void IblSpecularTextured::Startup()
 {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
   // enable seamless cubemap sampling for lower mip levels in the pre-filter map.
   glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-  ShaderBuilder shader_builder("src/test_progs/learn_opengl/6.pbr/4.1.ibl_specular/");
-  pbrShader = shader_builder.Vert("2.2.1.pbr.vs").Frag("2.2.1.pbr.fs").Build("PBR shader");
-  equirectangularToCubemapShader = shader_builder.Vert("2.2.1.cubemap.vs")
-    .Frag("2.2.1.equirectangular_to_cubemap.fs").Build("equirectangular To Cubemap Shader");
-  irradianceShader = shader_builder.Vert("2.2.1.cubemap.vs").Frag("2.2.1.irradiance_convolution.fs").Build("Irradiance Shader");
-  prefilterShader = shader_builder.Vert("2.2.1.cubemap.vs").Frag("2.2.1.prefilter.fs").Build("Prefilter shader");
-  brdfShader = shader_builder.Vert("2.2.1.brdf.vs").Frag("2.2.1.brdf.fs").Build("BRDF shader");
-  backgroundShader = shader_builder.Vert("2.2.1.background.vs").Frag("2.2.1.background.fs").Build("Background shader");
+  ShaderBuilder shader_builder("src/test_progs/learn_opengl/6.pbr/4.2.ibl_specular/");
+  pbrShader = shader_builder.Vert("2.2.2.pbr.vs").Frag("2.2.2.pbr.fs").Build("PBR shader");
+  equirectangularToCubemapShader = shader_builder.Vert("2.2.2.cubemap.vs")
+    .Frag("2.2.2.equirectangular_to_cubemap.fs").Build("equirectangular To Cubemap Shader");
+  irradianceShader = shader_builder.Vert("2.2.2.cubemap.vs").Frag("2.2.2.irradiance_convolution.fs").Build("Irradiance Shader");
+  prefilterShader = shader_builder.Vert("2.2.2.cubemap.vs").Frag("2.2.2.prefilter.fs").Build("Prefilter shader");
+  brdfShader = shader_builder.Vert("2.2.2.brdf.vs").Frag("2.2.2.brdf.fs").Build("BRDF shader");
+  backgroundShader = shader_builder.Vert("2.2.2.background.vs").Frag("2.2.2.background.fs").Build("Background shader");
  
   //Initialize static uniforms
   pbrShader->Bind();
   pbrShader->SetUniform1i("irradianceMap", 0);
   pbrShader->SetUniform1i("prefilterMap", 1);
   pbrShader->SetUniform1i("brdfLUT", 2);
-  pbrShader->SetUniform3f("albedo", 0.5f, 0.0f, 0.0f);
-  pbrShader->SetUniform1f("ao", 1.0f);  
+  pbrShader->SetUniform1i("albedoMap", 3);
+  pbrShader->SetUniform1i("normalMap", 4);
+  pbrShader->SetUniform1i("metallicMap", 5);
+  pbrShader->SetUniform1i("roughnessMap", 6);
+  pbrShader->SetUniform1i("aoMap", 7);
+  pbrShader->SetUniform1i("hasAOMap", 1);
+
   pbrShader->SetUniformMat4f("projection", m_camera.GetProjMatrix()); //Vert shader
 
   backgroundShader->Bind();
@@ -83,6 +88,49 @@ void IblSpecularSphere::Startup()
   brdfShader->Validate();
   backgroundShader->Validate();
 
+  // load PBR material textures
+    // --------------------------
+  ironAlbedoMap = loadTexture("assets/freepbr/rusted_iron/albedo.png");
+  ironNormalMap  = loadTexture("assets/freepbr/rusted_iron/normal.png");
+  ironMetallicMap = loadTexture("assets/freepbr/rusted_iron/metallic.png");
+  ironRoughnessMap = loadTexture("assets/freepbr/rusted_iron/roughness.png");
+  //ironAOMap = loadTexture("assets/freepbr/rusted_iron/ao.png");
+
+#if 1
+  //granite
+  graniteAlbedoMap = loadTexture("assets/freepbr/almond-speckled-granite-bl/almond-speckled-granite_albedo.png");
+  graniteNormalMap = loadTexture("assets/freepbr/almond-speckled-granite-bl/almond-speckled-granite_normal-ogl.png");
+  graniteMetallicMap = loadTexture("assets/freepbr/almond-speckled-granite-bl/almond-speckled-granite_metallic.png");
+  graniteRoughnessMap = loadTexture("assets/freepbr/almond-speckled-granite-bl/almond-speckled-granite_roughness.png");
+  graniteAOMap = loadTexture("assets/freepbr/almond-speckled-granite-bl/almond-speckled-granite_ao.png");
+  //also has a height texture
+
+
+  //gold
+  goldAlbedoMap = loadTexture("assets/freepbr/gold-scuffed-bl/gold-scuffed_basecolor-boosted.png");
+  goldNormalMap = loadTexture("assets/freepbr/gold-scuffed-bl/gold-scuffed_normal.png");
+  goldMetallicMap = loadTexture("assets/freepbr/gold-scuffed-bl/gold-scuffed_metallic.png");
+  goldRoughnessMap = loadTexture("assets/freepbr/gold-scuffed-bl/gold-scuffed_roughness.png");
+  //goldAOMap = loadTexture("assets/freepbr/gold-scuffed-bl/gold_scuffed-spepng");
+
+
+  //stone
+  stoneAlbedoMap = loadTexture("assets/freepbr/broken-down-stonework1-bl/broken-down-stonework_albedo.png");
+  stoneNormalMap = loadTexture("assets/freepbr/broken-down-stonework1-bl/broken-down-stonework_normal-ogl.png");
+  stoneMetallicMap = loadTexture("assets/freepbr/broken-down-stonework1-bl/broken-down-stonework_metallic.png");
+  stoneRoughnessMap = loadTexture("assets/freepbr/broken-down-stonework1-bl/broken-down-stonework_roughness.png");
+  stoneAOMap = loadTexture("assets/freepbr/broken-down-stonework1-bl/broken-down-stonework_ao.png");
+  //also has a height texture
+
+  //meadow
+  meadowAlbedoMap = loadTexture("assets/freepbr/patchy-meadow1-bl/patchy-meadow1_albedo.png");
+  meadowNormalMap = loadTexture("assets/freepbr/patchy-meadow1-bl/patchy-meadow1_normal-ogl.png");
+  meadowMetallicMap = loadTexture("assets/freepbr/patchy-meadow1-bl/patchy-meadow1_metallic.png");
+  meadowRoughnessMap = loadTexture("assets/freepbr/patchy-meadow1-bl/patchy-meadow1_roughness.png");
+  meadowAOMap = loadTexture("assets/freepbr/patchy-meadow1-bl/patchy-meadow1_ao.png");
+  //This also has a height map
+#endif
+  
   // pbr: setup framebuffer
   // ----------------------
   glGenFramebuffers(1, &captureFBO);
@@ -305,12 +353,12 @@ void IblSpecularSphere::Startup()
   glViewport(0, 0, m_window.BufferWidth(), m_window.BufferHeight());
 }
 
-void IblSpecularSphere::Shutdown()
+void IblSpecularTextured::Shutdown()
 {
   glfwTerminate();
 }
 
-void IblSpecularSphere::OnUpdate(double now, double time_step)
+void IblSpecularTextured::OnUpdate(double now, double time_step)
 {
   // render scene, supplying the convoluted irradiance map to the final shader.
   // ------------------------------------------------------------------------------------------
@@ -326,28 +374,103 @@ void IblSpecularSphere::OnUpdate(double now, double time_step)
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
 
-  // render rows*column number of spheres with varying metallic/roughness values scaled by rows and columns respectively
   glm::mat4 model = glm::mat4(1.0f);
-  for (int row = 0; row < nrRows; ++row)
-  {
-    pbrShader->SetUniform1f("metallic", (float)row / (float)nrRows);
-    for (int col = 0; col < nrColumns; ++col)
-    {
-      // we clamp the roughness to 0.025 - 1.0 as perfectly smooth surfaces (roughness of 0.0) tend to look a bit off
-      // on direct lighting.
-      pbrShader->SetUniform1f("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
+  // rusted iron
 
-      model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(
-        (float)(col - (nrColumns / 2)) * spacing,
-        (float)(row - (nrRows / 2)) * spacing,
-        -2.0f
-      ));
-      pbrShader->SetUniformMat4f("model", model);
-      pbrShader->SetUniformMat3f("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-      renderSphere();
-    }
-  }
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, ironAlbedoMap);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, ironNormalMap);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, ironMetallicMap);
+  glActiveTexture(GL_TEXTURE6);
+  glBindTexture(GL_TEXTURE_2D, ironRoughnessMap);
+  pbrShader->SetUniform1i("hasAOMap", 0);
+  
+  model = glm::translate(model, glm::vec3(-5.0, 4.0, 2.0));
+  pbrShader->SetUniformMat4f("model", model);
+  pbrShader->SetUniformMat3f("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+  renderSphere();
+  //---------------------------------------------------------------
+#if 1
+  // granite
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, graniteAlbedoMap);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, graniteNormalMap);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, graniteMetallicMap);
+  glActiveTexture(GL_TEXTURE6);
+  glBindTexture(GL_TEXTURE_2D, graniteRoughnessMap);
+  glActiveTexture(GL_TEXTURE7);
+  glBindTexture(GL_TEXTURE_2D, graniteAOMap);
+  pbrShader->SetUniform1i("hasAOMap", 1);
+
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(-2.0, 4.0, 2.0));
+  pbrShader->SetUniformMat4f("model", model);
+  pbrShader->SetUniformMat3f("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+  renderSphere();
+  //---------------------------------------------------------------
+
+  // Gold
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, goldAlbedoMap);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, goldNormalMap);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, goldMetallicMap);
+  glActiveTexture(GL_TEXTURE6);
+  glBindTexture(GL_TEXTURE_2D, goldRoughnessMap);
+  pbrShader->SetUniform1i("hasAOMap", 0);
+
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(1.0, 4.0, 2.0));
+  pbrShader->SetUniformMat4f("model", model);
+  pbrShader->SetUniformMat3f("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+  renderSphere();
+  //---------------------------------------------------------------
+
+  // stone
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, stoneAlbedoMap);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, stoneNormalMap);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, stoneMetallicMap);
+  glActiveTexture(GL_TEXTURE6);
+  glBindTexture(GL_TEXTURE_2D, stoneRoughnessMap);
+  glActiveTexture(GL_TEXTURE7);
+  glBindTexture(GL_TEXTURE_2D, stoneAOMap);
+  pbrShader->SetUniform1i("hasAOMap", 1);
+
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(4.0, 4.0, 2.0));
+  pbrShader->SetUniformMat4f("model", model);
+  pbrShader->SetUniformMat3f("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+  renderSphere();
+  //---------------------------------------------------------------
+
+  // meadow
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, meadowAlbedoMap);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, meadowNormalMap);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, meadowMetallicMap);
+  glActiveTexture(GL_TEXTURE6);
+  glBindTexture(GL_TEXTURE_2D, meadowRoughnessMap);
+  glActiveTexture(GL_TEXTURE7);
+  glBindTexture(GL_TEXTURE_2D, meadowAOMap);
+  pbrShader->SetUniform1i("hasAOMap", 1);
+
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(7.0, 4.0, 2.0));
+  pbrShader->SetUniformMat4f("model", model);
+  pbrShader->SetUniformMat3f("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+  renderSphere();
+  //---------------------------------------------------------------
+#endif
 
   // render light source (simply re-render sphere at light positions)
   // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
@@ -383,11 +506,11 @@ void IblSpecularSphere::OnUpdate(double now, double time_step)
 
 }
 
-void IblSpecularSphere::ImGuiUpdate()
+void IblSpecularTextured::ImGuiUpdate()
 {
 }
 
-void IblSpecularSphere::CheckKeys(double delta_time)
+void IblSpecularTextured::CheckKeys(double delta_time)
 {
   const float move_speed = 5.0f;
   const float t = (float)(delta_time);
@@ -406,7 +529,7 @@ void IblSpecularSphere::CheckKeys(double delta_time)
     m_camera.MoveRight(move_speed * t);
 }
 
-void IblSpecularSphere::OnEvent(Event& event)
+void IblSpecularTextured::OnEvent(Event& event)
 {
   if (event.Type() == Event::kMouseMove)
   {
@@ -449,7 +572,7 @@ void IblSpecularSphere::OnEvent(Event& event)
   }
 }
 
-void IblSpecularSphere::renderCube()
+void IblSpecularTextured::renderCube()
 {
   // initialize (if necessary)
   if (cubeVAO == 0)
@@ -520,7 +643,7 @@ void IblSpecularSphere::renderCube()
   glBindVertexArray(0);
 }
 
-void IblSpecularSphere::renderSphere()
+void IblSpecularTextured::renderSphere()
 {
   if (sphereVAO == 0)
   {
@@ -613,14 +736,46 @@ void IblSpecularSphere::renderSphere()
   glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 }
 
-unsigned int IblSpecularSphere::loadTexture(char const* path)
+unsigned int IblSpecularTextured::loadTexture(char const* path)
 {
-  return 0;
+  unsigned int textureID;
+  glGenTextures(1, &textureID);
+
+  int width, height, nrComponents;
+  unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+  if (data)
+  {
+    GLenum format;
+    if (nrComponents == 1)
+      format = GL_RED;
+    else if (nrComponents == 3)
+      format = GL_RGB;
+    else if (nrComponents == 4)
+      format = GL_RGBA;
+
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+  }
+  else
+  {
+    std::cout << "Texture failed to load at path: " << path << std::endl;
+    stbi_image_free(data);
+  }
+
+  return textureID;
 }
 
 // renderQuad() renders a 1x1 XY quad in NDC
 // -----------------------------------------
-void IblSpecularSphere::renderQuad()
+void IblSpecularTextured::renderQuad()
 {
   if (quadVAO == 0)
   {
